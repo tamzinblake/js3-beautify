@@ -1,4 +1,4 @@
-;;; js3-util.el -- JavaScript utilities
+;;; js3-beautify-util.el -- JavaScript utilities
 
 ;;; Code
 
@@ -79,13 +79,13 @@ BEG and END default respectively to the beginning and end of buffer."
 ;; we don't want a runtime dependency on the CL package, so define
 ;; our own versions of these functions.
 
-(defun js3-delete-if (predicate list)
+(defun js3-beautify-delete-if (predicate list)
   "Remove all items satisfying PREDICATE in LIST."
   (loop for item in list
         if (not (funcall predicate item))
         collect item))
 
-(defun js3-position (element list)
+(defun js3-beautify-position (element list)
   "Find 0-indexed position of ELEMENT in LIST comparing with `eq'.
 Returns nil if element is not found in the list."
   (let ((count 0)
@@ -97,7 +97,7 @@ Returns nil if element is not found in the list."
               list (cdr list))))
     (if found count)))
 
-(defun js3-find-if (predicate list)
+(defun js3-beautify-find-if (predicate list)
   "Find first item satisfying PREDICATE in LIST."
   (let (result)
     (while (and list (not result))
@@ -108,10 +108,10 @@ Returns nil if element is not found in the list."
 
 ;;; end Emacs 21 compat
 
-(defmacro js3-time (form)
+(defmacro js3-beautify-time (form)
   "Evaluate FORM, discard result, and return elapsed time in sec"
-  (let ((beg (make-symbol "--js3-time-beg--"))
-        (delta (make-symbol "--js3-time-end--")))
+  (let ((beg (make-symbol "--js3-beautify-time-beg--"))
+        (delta (make-symbol "--js3-beautify-time-end--")))
     `(let ((,beg (current-time))
            ,delta)
        ,form
@@ -120,87 +120,87 @@ Returns nil if element is not found in the list."
 		       10000))
           10000.0))))
 
-(def-edebug-spec js3-time t)
+(def-edebug-spec js3-beautify-time t)
 
 (defsubst neq (expr1 expr2)
   "Return (not (eq expr1 expr2))."
   (not (eq expr1 expr2)))
 
-(defsubst js3-same-line (pos)
+(defsubst js3-beautify-same-line (pos)
   "Return t if POS is on the same line as current point."
   (and (>= pos (point-at-bol))
        (<= pos (point-at-eol))))
 
-(defsubst js3-same-line-2 (p1 p2)
+(defsubst js3-beautify-same-line-2 (p1 p2)
   "Return t if p1 is on the same line as p2."
   (save-excursion
     (goto-char p1)
-    (js3-same-line p2)))
+    (js3-beautify-same-line p2)))
 
-(defun js3-code-bug ()
+(defun js3-beautify-code-bug ()
   "Signal an error when we encounter an unexpected code path."
   (error "failed assertion"))
 
-(defsubst js3-record-text-property (beg end prop value)
-  "Record a text property to set when parsing finishes."
-  (push (list beg end prop value) js3-mode-deferred-properties))
+(defsubst js3-beautify-record-text-property (beg end prop value)
+  "Set a text property."
+  (apply #'put-text-property beg end prop value))
 
 ;; I'd like to associate errors with nodes, but for now the
 ;; easiest thing to do is get the context info from the last token.
-(defsubst js3-record-parse-error (msg &optional arg pos len)
+(defsubst js3-beautify-record-parse-error (msg &optional arg pos len)
   (push (list (list msg arg)
-              (or pos js3-token-beg)
-              (or len (- js3-token-end js3-token-beg)))
-        js3-parsed-errors))
+              (or pos js3-beautify-token-beg)
+              (or len (- js3-beautify-token-end js3-beautify-token-beg)))
+        js3-beautify-parsed-errors))
 
-(defsubst js3-report-error (msg &optional msg-arg pos len)
+(defsubst js3-beautify-report-error (msg &optional msg-arg pos len)
   "Signal a syntax error or record a parse error."
-  (if js3-recover-from-parse-errors
-      (js3-record-parse-error msg msg-arg pos len)
-    (signal 'js3-syntax-error
+  (if js3-beautify-recover-from-parse-errors
+      (js3-beautify-record-parse-error msg msg-arg pos len)
+    (signal 'js3-beautify-syntax-error
             (list msg
-                  js3-ts-lineno
+                  js3-beautify-ts-lineno
                   (save-excursion
-                    (goto-char js3-ts-cursor)
+                    (goto-char js3-beautify-ts-cursor)
                     (current-column))
-                  js3-ts-hit-eof))))
+                  js3-beautify-ts-hit-eof))))
 
-(defsubst js3-report-warning (msg &optional msg-arg pos len)
-  (if js3-compiler-report-warning-as-error
-      (js3-report-error msg msg-arg pos len)
+(defsubst js3-beautify-report-warning (msg &optional msg-arg pos len)
+  (if js3-beautify-compiler-report-warning-as-error
+      (js3-beautify-report-error msg msg-arg pos len)
     (push (list (list msg msg-arg)
-                (or pos js3-token-beg)
-                (or len (- js3-token-end js3-token-beg)))
-          js3-parsed-warnings)))
+                (or pos js3-beautify-token-beg)
+                (or len (- js3-beautify-token-end js3-beautify-token-beg)))
+          js3-beautify-parsed-warnings)))
 
-(defsubst js3-add-strict-warning (msg-id &optional msg-arg beg end)
-  (if js3-compiler-strict-mode
-      (js3-report-warning msg-id msg-arg beg
+(defsubst js3-beautify-add-strict-warning (msg-id &optional msg-arg beg end)
+  (if js3-beautify-compiler-strict-mode
+      (js3-beautify-report-warning msg-id msg-arg beg
                           (and beg end (- end beg)))))
 
-(put 'js3-syntax-error 'error-conditions
-     '(error syntax-error js3-syntax-error))
-(put 'js3-syntax-error 'error-message "Syntax error")
+(put 'js3-beautify-syntax-error 'error-conditions
+     '(error syntax-error js3-beautify-syntax-error))
+(put 'js3-beautify-syntax-error 'error-message "Syntax error")
 
-(put 'js3-parse-error 'error-conditions
-     '(error parse-error js3-parse-error))
-(put 'js3-parse-error 'error-message "Parse error")
+(put 'js3-beautify-parse-error 'error-conditions
+     '(error parse-error js3-beautify-parse-error))
+(put 'js3-beautify-parse-error 'error-message "Parse error")
 
-(defmacro js3-clear-flag (flags flag)
+(defmacro js3-beautify-clear-flag (flags flag)
   `(setq ,flags (logand ,flags (lognot ,flag))))
 
-(defmacro js3-set-flag (flags flag)
+(defmacro js3-beautify-set-flag (flags flag)
   "Logical-or FLAG into FLAGS."
   `(setq ,flags (logior ,flags ,flag)))
 
-(defsubst js3-flag-set-p (flags flag)
+(defsubst js3-beautify-flag-set-p (flags flag)
   (/= 0 (logand flags flag)))
 
-(defsubst js3-flag-not-set-p (flags flag)
+(defsubst js3-beautify-flag-not-set-p (flags flag)
   (zerop (logand flags flag)))
 
 ;; Stolen shamelessly from James Clark's nxml-mode.
-(defmacro js3-with-unmodifying-text-property-changes (&rest body)
+(defmacro js3-beautify-with-unmodifying-text-property-changes (&rest body)
   "Evaluate BODY without any text property changes modifying the buffer.
 Any text properties changes happen as usual but the changes are not treated as
 modifications to the buffer."
@@ -218,21 +218,21 @@ modifications to the buffer."
          (unless ,modified
            (restore-buffer-modified-p nil))))))
 
-(put 'js3-with-unmodifying-text-property-changes 'lisp-indent-function 0)
-(def-edebug-spec js3-with-unmodifying-text-property-changes t)
+(put 'js3-beautify-with-unmodifying-text-property-changes 'lisp-indent-function 0)
+(def-edebug-spec js3-beautify-with-unmodifying-text-property-changes t)
 
-(defmacro js3-with-underscore-as-word-syntax (&rest body)
+(defmacro js3-beautify-with-underscore-as-word-syntax (&rest body)
   "Evaluate BODY with the _ character set to be word-syntax."
   (let ((old-syntax (make-symbol "old-syntax")))
     `(let ((,old-syntax (string (char-syntax ?_))))
        (unwind-protect
            (progn
-             (modify-syntax-entry ?_ "w" js3-mode-syntax-table)
+             (modify-syntax-entry ?_ "w" js3-beautify-syntax-table)
              ,@body)
-         (modify-syntax-entry ?_ ,old-syntax js3-mode-syntax-table)))))
+         (modify-syntax-entry ?_ ,old-syntax js3-beautify-syntax-table)))))
 
-(put 'js3-with-underscore-as-word-syntax 'lisp-indent-function 0)
-(def-edebug-spec js3-with-underscore-as-word-syntax t)
+(put 'js3-beautify-with-underscore-as-word-syntax 'lisp-indent-function 0)
+(def-edebug-spec js3-beautify-with-underscore-as-word-syntax t)
 
 (defmacro with-buffer (buf form)
   "Executes FORM in buffer BUF.
@@ -260,6 +260,6 @@ Handles unicode and latin chars properly."
 (put 'with-buffer 'lisp-indent-function 1)
 (def-edebug-spec with-buffer t)
 
-(provide 'js3-util)
+(provide 'js3-beautify-util)
 
-;;; js3-util.el ends here
+;;; js3-beautify-util.el ends here
