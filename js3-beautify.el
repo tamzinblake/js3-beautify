@@ -8262,6 +8262,11 @@ nil."
 
 ;;; Code:
 
+(defun js3-beautify-ugly-print ()
+  "Try to dump the ast."
+  (interactive)
+  (insert (js3-beautify-print-line (js3-beautify-parse))))
+
 (defun js3-beautify-pretty-print ()
   "Pretty print the Javascript code in the ast tree."
   (interactive)
