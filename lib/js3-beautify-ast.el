@@ -11,12 +11,7 @@
 If POS is nil, returns nil."
   (and pos (- pos anchor)))
 
-(defsubst js3-beautify-make-pad (indent)
-  (if (zerop indent)
-      ""
-    (make-string (* indent js3-beautify-indent-level) ? )))
-
-(defsubst js3-beautify-visit-ast (node callback)
+(defun js3-beautify-visit-ast (node callback)
   "Visit every node in ast NODE with visitor CALLBACK.
 
 CALLBACK is a function that takes two arguments:  (NODE END-P).  It is
@@ -119,11 +114,10 @@ If any given node in NODES is nil, doesn't record that link."
     (js3-beautify-visit-ast kid callback)))
 
 (defun js3-beautify-print-block (n i)
-  (let ((pad (js3-beautify-make-pad i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "{\n"))
-    (dolist (kid (js3-beautify-block-node-kids n))
-      (js3-beautify-print-ast kid (1+ i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "{"))
+  (dolist (kid (js3-beautify-block-node-kids n))
+    (js3-beautify-print-ast kid (1+ i)))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-scope
             (:include js3-beautify-block-node)
@@ -278,7 +272,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
 (defun js3-beautify-print-comment (n i)
   ;; We really ought to link end-of-line comments to their nodes.
   ;; Or maybe we could add a new comment type, 'endline.
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) (js3-beautify-node-string n))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-node-string n))))
 
 (defstruct (js3-beautify-expr-stmt-node
             (:include js3-beautify-node)
@@ -302,7 +296,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
 
 (defun js3-beautify-print-expr-stmt-node (n indent)
   (js3-beautify-print-ast (js3-beautify-expr-stmt-node-expr n) indent)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr ";\n")))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " ")))
 
 (defstruct (js3-beautify-loop-node
             (:include js3-beautify-scope)
@@ -335,13 +329,12 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-do-node-condition n) v))
 
 (defun js3-beautify-print-do-node (n i)
-  (let ((pad (js3-beautify-make-pad i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "do {\n"))
-    (dolist (kid (js3-beautify-block-node-kids (js3-beautify-do-node-body n)))
-      (js3-beautify-print-ast kid (1+ i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "} while ("))
-    (js3-beautify-print-ast (js3-beautify-do-node-condition n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ");\n"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "do {"))
+  (dolist (kid (js3-beautify-block-node-kids (js3-beautify-do-node-body n)))
+    (js3-beautify-print-ast kid (1+ i)))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "} while ("))
+  (js3-beautify-print-ast (js3-beautify-do-node-condition n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ")")))
 
 (defstruct (js3-beautify-while-node
             (:include js3-beautify-loop-node)
@@ -364,12 +357,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-while-node-body n) v))
 
 (defun js3-beautify-print-while-node (n i)
-  (let ((pad (js3-beautify-make-pad i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "while ("))
-    (js3-beautify-print-ast (js3-beautify-while-node-condition n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ") {\n"))
-    (js3-beautify-print-body (js3-beautify-while-node-body n) (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}\n"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "while ("))
+  (js3-beautify-print-ast (js3-beautify-while-node-condition n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
+  (js3-beautify-print-body (js3-beautify-while-node-body n) (1+ i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-for-node
             (:include js3-beautify-loop-node)
@@ -398,16 +390,15 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-for-node-body n) v))
 
 (defun js3-beautify-print-for-node (n i)
-  (let ((pad (js3-beautify-make-pad i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "for ("))
-    (js3-beautify-print-ast (js3-beautify-for-node-init n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr "; "))
-    (js3-beautify-print-ast (js3-beautify-for-node-condition n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr "; "))
-    (js3-beautify-print-ast (js3-beautify-for-node-update n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ") {\n"))
-    (js3-beautify-print-body (js3-beautify-for-node-body n) (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}\n"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "for ("))
+  (js3-beautify-print-ast (js3-beautify-for-node-init n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "; "))
+  (js3-beautify-print-ast (js3-beautify-for-node-condition n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "; "))
+  (js3-beautify-print-ast (js3-beautify-for-node-update n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
+  (js3-beautify-print-body (js3-beautify-for-node-body n) (1+ i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-for-in-node
             (:include js3-beautify-loop-node)
@@ -439,18 +430,16 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-for-in-node-body n) v))
 
 (defun js3-beautify-print-for-in-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (foreach (js3-beautify-for-in-node-foreach-p n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "for "))
-    (if foreach
-        (setq js3-beautify-curstr (concat js3-beautify-curstr "each ")))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr "("))
-    (js3-beautify-print-ast (js3-beautify-for-in-node-iterator n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr " in "))
-    (js3-beautify-print-ast (js3-beautify-for-in-node-object n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ") {\n"))
-    (js3-beautify-print-body (js3-beautify-for-in-node-body n) (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}\n"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "for "))
+  (if (js3-beautify-for-in-node-foreach-p n)
+      (setq js3-beautify-curstr (concat js3-beautify-curstr "each ")))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "("))
+  (js3-beautify-print-ast (js3-beautify-for-in-node-iterator n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " in "))
+  (js3-beautify-print-ast (js3-beautify-for-in-node-object n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
+  (js3-beautify-print-body (js3-beautify-for-in-node-body n) (1+ i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-return-node
             (:include js3-beautify-node)
@@ -469,11 +458,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-return-node-retval n) v))
 
 (defun js3-beautify-print-return-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "return"))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "return"))
   (when (js3-beautify-return-node-retval n)
     (setq js3-beautify-curstr (concat js3-beautify-curstr " "))
     (js3-beautify-print-ast (js3-beautify-return-node-retval n) 0))
-  (setq js3-beautify-curstr (concat js3-beautify-curstr ";\n")))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " ")))
 
 (defstruct (js3-beautify-if-node
             (:include js3-beautify-node)
@@ -504,24 +493,21 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-if-node-else-part n) v))
 
 (defun js3-beautify-print-if-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (then-part (js3-beautify-if-node-then-part n))
-        (else-part (js3-beautify-if-node-else-part n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "if ("))
-    (js3-beautify-print-ast (js3-beautify-if-node-condition n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ") {\n"))
-    (js3-beautify-print-body then-part (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}"))
-    (cond
-     ((not else-part)
-      (setq js3-beautify-curstr (concat js3-beautify-curstr "\n")))
-     ((js3-beautify-if-node-p else-part)
-      (setq js3-beautify-curstr (concat js3-beautify-curstr " else "))
-      (js3-beautify-print-body else-part i))
-     (t
-      (setq js3-beautify-curstr (concat js3-beautify-curstr " else {\n"))
-      (js3-beautify-print-body else-part (1+ i))
-      (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}\n"))))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "if ("))
+  (js3-beautify-print-ast (js3-beautify-if-node-condition n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
+  (js3-beautify-print-body (js3-beautify-if-node-then-part n) (1+ i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}"))
+  (cond
+   ((not (js3-beautify-if-node-else-part n))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr " ")))
+   ((js3-beautify-if-node-p (js3-beautify-if-node-else-part n))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr " else "))
+    (js3-beautify-print-body (js3-beautify-if-node-else-part n) i))
+   (t
+    (setq js3-beautify-curstr (concat js3-beautify-curstr " else {"))
+    (js3-beautify-print-body (js3-beautify-if-node-else-part n) (1+ i))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))))
 
 (defstruct (js3-beautify-try-node
             (:include js3-beautify-node)
@@ -547,18 +533,17 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-try-node-finally-block n) v))
 
 (defun js3-beautify-print-try-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (catches (js3-beautify-try-node-catch-clauses n))
+  (let ((catches (js3-beautify-try-node-catch-clauses n))
         (finally (js3-beautify-try-node-finally-block n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "try {\n"))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr "try {"))
     (js3-beautify-print-body (js3-beautify-try-node-try-block n) (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}"))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr "}"))
     (when catches
       (dolist (catch catches)
         (js3-beautify-print-ast catch i)))
     (if finally
         (js3-beautify-print-ast finally i)
-      (setq js3-beautify-curstr (concat js3-beautify-curstr "\n")))))
+      (setq js3-beautify-curstr (concat js3-beautify-curstr "")))))
 
 (defstruct (js3-beautify-catch-node
             (:include js3-beautify-node)
@@ -590,17 +575,14 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-catch-node-block n) v))
 
 (defun js3-beautify-print-catch-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (guard-kwd (js3-beautify-catch-node-guard-kwd n))
-        (guard-expr (js3-beautify-catch-node-guard-expr n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr " catch ("))
-    (js3-beautify-print-ast (js3-beautify-catch-node-var-name n) 0)
-    (when guard-kwd
-      (setq js3-beautify-curstr (concat js3-beautify-curstr " if "))
-      (js3-beautify-print-ast guard-expr 0))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ") {\n"))
-    (js3-beautify-print-body (js3-beautify-catch-node-block n) (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " catch ("))
+  (js3-beautify-print-ast (js3-beautify-catch-node-var-name n) 0)
+  (when (js3-beautify-catch-node-guard-kwd n)
+    (setq js3-beautify-curstr (concat js3-beautify-curstr " if "))
+    (js3-beautify-print-ast (js3-beautify-catch-node-guard-expr n) 0))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
+  (js3-beautify-print-body (js3-beautify-catch-node-block n) (1+ i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-finally-node
             (:include js3-beautify-node)
@@ -619,10 +601,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-finally-node-body n) v))
 
 (defun js3-beautify-print-finally-node (n i)
-  (let ((pad (js3-beautify-make-pad i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr " finally {\n"))
-    (js3-beautify-print-body (js3-beautify-finally-node-body n) (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}\n"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " finally {"))
+  (js3-beautify-print-body (js3-beautify-finally-node-body n) (1+ i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-switch-node
             (:include js3-beautify-node)
@@ -649,14 +630,12 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
     (js3-beautify-visit-ast c v)))
 
 (defun js3-beautify-print-switch-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (cases (js3-beautify-switch-node-cases n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "switch ("))
-    (js3-beautify-print-ast (js3-beautify-switch-node-discriminant n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ") {\n"))
-    (dolist (case cases)
-      (js3-beautify-print-ast case i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}\n"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "switch ("))
+  (js3-beautify-print-ast (js3-beautify-switch-node-discriminant n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
+  (dolist (case (js3-beautify-switch-node-cases n))
+    (js3-beautify-print-ast case i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-case-node
             (:include js3-beautify-block-node)
@@ -677,16 +656,13 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-block n v))
 
 (defun js3-beautify-print-case-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (expr (js3-beautify-case-node-expr n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad))
-    (if (null expr)
-        (setq js3-beautify-curstr (concat js3-beautify-curstr "default:\n"))
-      (setq js3-beautify-curstr (concat js3-beautify-curstr "case "))
-      (js3-beautify-print-ast expr 0)
-      (setq js3-beautify-curstr (concat js3-beautify-curstr ":\n")))
-    (dolist (kid (js3-beautify-case-node-kids n))
-      (js3-beautify-print-ast kid (1+ i)))))
+  (if (null (js3-beautify-case-node-expr n))
+      (setq js3-beautify-curstr (concat js3-beautify-curstr "default:"))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr "case "))
+    (js3-beautify-print-ast (js3-beautify-case-node-expr n) 0)
+    (setq js3-beautify-curstr (concat js3-beautify-curstr ":")))
+  (dolist (kid (js3-beautify-case-node-kids n))
+    (js3-beautify-print-ast kid (1+ i))))
 
 (defstruct (js3-beautify-throw-node
             (:include js3-beautify-node)
@@ -705,9 +681,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-throw-node-expr n) v))
 
 (defun js3-beautify-print-throw-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "throw "))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "throw "))
   (js3-beautify-print-ast (js3-beautify-throw-node-expr n) 0)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr ";\n")))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " ")))
 
 (defstruct (js3-beautify-with-node
             (:include js3-beautify-node)
@@ -733,12 +709,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-with-node-body n) v))
 
 (defun js3-beautify-print-with-node (n i)
-  (let ((pad (js3-beautify-make-pad i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "with ("))
-    (js3-beautify-print-ast (js3-beautify-with-node-object n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ") {\n"))
-    (js3-beautify-print-body (js3-beautify-with-node-body n) (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}\n"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "with ("))
+  (js3-beautify-print-ast (js3-beautify-with-node-object n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
+  (js3-beautify-print-body (js3-beautify-with-node-body n) (1+ i))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
 (defstruct (js3-beautify-label-node
             (:include js3-beautify-node)
@@ -756,9 +731,8 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
 
 (defun js3-beautify-print-label (n i)
   (setq js3-beautify-curstr (concat js3-beautify-curstr
-				    (js3-beautify-make-pad i)
 				    (js3-beautify-label-node-name n)
-				    ":\n")))
+				    ":")))
 
 (defstruct (js3-beautify-labeled-stmt-node
             (:include js3-beautify-node)
@@ -839,11 +813,11 @@ is the target of the break - a label node or enclosing loop/switch statement.")
 (put 'cl-struct-js3-beautify-break-node 'js3-beautify-printer 'js3-beautify-print-break-node)
 
 (defun js3-beautify-print-break-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "break"))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "break"))
   (when (js3-beautify-break-node-label n)
     (setq js3-beautify-curstr (concat js3-beautify-curstr " "))
     (js3-beautify-print-ast (js3-beautify-break-node-label n) 0))
-  (setq js3-beautify-curstr (concat js3-beautify-curstr ";\n")))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ";")))
 
 (defstruct (js3-beautify-continue-node
             (:include js3-beautify-jump-node)
@@ -862,11 +836,11 @@ a `js3-beautify-label-node' or the innermost enclosing loop.")
 (put 'cl-struct-js3-beautify-continue-node 'js3-beautify-printer 'js3-beautify-print-continue-node)
 
 (defun js3-beautify-print-continue-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "continue"))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "continue"))
   (when (js3-beautify-continue-node-label n)
     (setq js3-beautify-curstr (concat js3-beautify-curstr " "))
     (js3-beautify-print-ast (js3-beautify-continue-node-label n) 0))
-  (setq js3-beautify-curstr (concat js3-beautify-curstr ";\n")))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " ")))
 
 (defstruct (js3-beautify-function-node
             (:include js3-beautify-script-node)
@@ -907,14 +881,13 @@ The `params' field is a lisp list of nodes.  Each node is either a simple
   (js3-beautify-visit-ast (js3-beautify-function-node-body n) v))
 
 (defun js3-beautify-print-function-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (getter (js3-beautify-node-get-prop n 'GETTER_SETTER))
+  (let ((getter (js3-beautify-node-get-prop n 'GETTER_SETTER))
         (name (js3-beautify-function-node-name n))
         (params (js3-beautify-function-node-params n))
         (body (js3-beautify-function-node-body n))
         (expr (eq (js3-beautify-function-node-form n) 'FUNCTION_EXPRESSION)))
     (unless getter
-      (setq js3-beautify-curstr (concat js3-beautify-curstr pad "function")))
+      (setq js3-beautify-curstr (concat js3-beautify-curstr "function")))
     (when name
       (setq js3-beautify-curstr (concat js3-beautify-curstr " "))
       (js3-beautify-print-ast name 0))
@@ -928,12 +901,12 @@ The `params' field is a lisp list of nodes.  Each node is either a simple
               (setq js3-beautify-curstr (concat js3-beautify-curstr ", "))))
     (setq js3-beautify-curstr (concat js3-beautify-curstr ") {"))
     (unless expr
-      (setq js3-beautify-curstr (concat js3-beautify-curstr "\n")))
+      (setq js3-beautify-curstr (concat js3-beautify-curstr "")))
     ;; TODO:  fix this to be smarter about indenting, etc.
     (js3-beautify-print-body body (1+ i))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "}"))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr "}"))
     (unless expr
-      (setq js3-beautify-curstr (concat js3-beautify-curstr "\n")))))
+      (setq js3-beautify-curstr (concat js3-beautify-curstr "")))))
 
 (defsubst js3-beautify-function-name (node)
   "Return function name for NODE, a `js3-beautify-function-node', or nil if anonymous."
@@ -968,16 +941,15 @@ declarations, the node begins at the position of the first child."
     (js3-beautify-visit-ast kid v)))
 
 (defun js3-beautify-print-var-decl (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (tt (js3-beautify-var-decl-node-decl-type n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr
-				      (cond
-				       ((= tt js3-beautify-VAR) "var ")
-				       ((= tt js3-beautify-LET) "")  ; handled by parent let-{expr/stmt}
-				       ((= tt js3-beautify-CONST) "const ")
-				       (t
-					(error "malformed var-decl node")))))
+  (let ((tt (js3-beautify-var-decl-node-decl-type n)))
+    (setq js3-beautify-curstr
+	  (concat js3-beautify-curstr
+		  (cond
+		   ((= tt js3-beautify-VAR) "var ")
+		   ((= tt js3-beautify-LET) "")  ; handled by parent let-{expr/stmt}
+		   ((= tt js3-beautify-CONST) "const ")
+		   (t
+		    (error "malformed var-decl node")))))
     (loop with kids = (js3-beautify-var-decl-node-kids n)
           with len = (length kids)
           for kid in kids
@@ -1008,14 +980,10 @@ The type field will be js3-beautify-CONST for a const decl."
   (js3-beautify-visit-ast (js3-beautify-var-init-node-initializer n) v))
 
 (defun js3-beautify-print-var-init-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (name (js3-beautify-var-init-node-target n))
-        (init (js3-beautify-var-init-node-initializer n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad))
-    (js3-beautify-print-ast name 0)
-    (when init
-      (setq js3-beautify-curstr (concat js3-beautify-curstr " = "))
-      (js3-beautify-print-ast init 0))))
+  (js3-beautify-print-ast (js3-beautify-var-init-node-target n) 0)
+  (when (js3-beautify-var-init-node-initializer n)
+    (setq js3-beautify-curstr (concat js3-beautify-curstr " = "))
+    (js3-beautify-print-ast (js3-beautify-var-init-node-initializer n) 0)))
 
 (defstruct (js3-beautify-cond-node
             (:include js3-beautify-node)
@@ -1044,13 +1012,11 @@ The type field will be js3-beautify-CONST for a const decl."
   (js3-beautify-visit-ast (js3-beautify-cond-node-false-expr n) v))
 
 (defun js3-beautify-print-cond-node (n i)
-  (let ((pad (js3-beautify-make-pad i)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad))
-    (js3-beautify-print-ast (js3-beautify-cond-node-test-expr n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr " ? "))
-    (js3-beautify-print-ast (js3-beautify-cond-node-true-expr n) 0)
-    (setq js3-beautify-curstr (concat js3-beautify-curstr " : "))
-    (js3-beautify-print-ast (js3-beautify-cond-node-false-expr n) 0)))
+  (js3-beautify-print-ast (js3-beautify-cond-node-test-expr n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " ? "))
+  (js3-beautify-print-ast (js3-beautify-cond-node-true-expr n) 0)
+  (setq js3-beautify-curstr (concat js3-beautify-curstr " : "))
+  (js3-beautify-print-ast (js3-beautify-cond-node-false-expr n) 0))
 
 (defstruct (js3-beautify-infix-node
             (:include js3-beautify-node)
@@ -1132,7 +1098,6 @@ The type field inherited from `js3-beautify-node' holds the operator."
          (op (gethash tt js3-beautify-operator-tokens)))
     (unless op
       (error "unrecognized infix operator %s" (js3-beautify-node-type n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
     (js3-beautify-print-ast (js3-beautify-infix-node-left n) 0)
     (unless (= tt js3-beautify-COMMA)
       (setq js3-beautify-curstr (concat js3-beautify-curstr " ")))
@@ -1180,7 +1145,6 @@ property is added if the operator follows the operand."
          (postfix (js3-beautify-node-get-prop n 'postfix)))
     (unless op
       (error "unrecognized unary operator %s" tt))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
     (unless postfix
       (setq js3-beautify-curstr (concat js3-beautify-curstr op)))
     (if (or (= tt js3-beautify-TYPEOF)
@@ -1215,7 +1179,7 @@ Note that a let declaration such as let x=6, y=7 is a `js3-beautify-var-decl-nod
   (js3-beautify-visit-ast (js3-beautify-let-node-body n) v))
 
 (defun js3-beautify-print-let-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "let ("))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "let ("))
   (js3-beautify-print-ast (js3-beautify-let-node-vars n) 0)
   (setq js3-beautify-curstr (concat js3-beautify-curstr ") "))
   (js3-beautify-print-ast (js3-beautify-let-node-body n) i))
@@ -1235,7 +1199,7 @@ The node type is set to js3-beautify-NULL, js3-beautify-THIS, etc.")
 
 (defun js3-beautify-print-keyword-node (n i)
   (setq js3-beautify-curstr
-	(concat js3-beautify-curstr (js3-beautify-make-pad i)
+	(concat js3-beautify-curstr
 		(let ((tt (js3-beautify-node-type n)))
 		  (cond
 		   ((= tt 'js3-beautify-THIS) "this")
@@ -1277,7 +1241,7 @@ The node type is set to js3-beautify-NULL, js3-beautify-THIS, etc.")
   (js3-beautify-visit-ast (js3-beautify-new-node-initializer n) v))
 
 (defun js3-beautify-print-new-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "new "))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "new "))
   (js3-beautify-print-ast (js3-beautify-new-node-target n))
   (setq js3-beautify-curstr (concat js3-beautify-curstr "("))
   (js3-beautify-print-list (js3-beautify-new-node-args n))
@@ -1289,11 +1253,12 @@ The node type is set to js3-beautify-NULL, js3-beautify-THIS, etc.")
 (defstruct (js3-beautify-name-node
             (:include js3-beautify-node)
             (:constructor nil)
-            (:constructor make-js3-beautify-name-node (&key (type js3-beautify-NAME)
-                                                   (pos js3-beautify-token-beg)
-                                                   (len (- js3-beautify-ts-cursor
-                                                           js3-beautify-token-beg))
-                                                   (name js3-beautify-ts-string))))
+            (:constructor make-js3-beautify-name-node
+			  (&key (type js3-beautify-NAME)
+				(pos js3-beautify-token-beg)
+				(len (- js3-beautify-ts-cursor
+					js3-beautify-token-beg))
+				(name js3-beautify-ts-string))))
   "AST node for a JavaScript identifier"
   name   ; a string
   scope) ; a `js3-beautify-scope' (optional, used for codegen)
@@ -1303,7 +1268,7 @@ The node type is set to js3-beautify-NULL, js3-beautify-THIS, etc.")
 
 (defun js3-beautify-print-name-node (n i)
   (setq js3-beautify-curstr
-	(concat js3-beautify-curstr (js3-beautify-make-pad i)
+	(concat js3-beautify-curstr
 		(js3-beautify-name-node-name n))))
 
 (defsubst js3-beautify-name-node-length (node)
@@ -1331,8 +1296,8 @@ Returns 0 if NODE is nil or its identifier field is nil."
 
 (defun js3-beautify-print-number-node (n i)
   (setq js3-beautify-curstr
-	(concat js3-beautify-curstr (js3-beautify-make-pad i)
-		(number-to-string (js3-beautify-number-node-value n)))))
+	(concat js3-beautify-curstr
+		(number-to-string (js3-beautify-number-node-num-value n)))))
 
 (defstruct (js3-beautify-regexp-node
             (:include js3-beautify-node)
@@ -1352,7 +1317,7 @@ Returns 0 if NODE is nil or its identifier field is nil."
 
 (defun js3-beautify-print-regexp (n i)
   (setq js3-beautify-curstr
-	(concat js3-beautify-curstr (js3-beautify-make-pad i)
+	(concat js3-beautify-curstr
 		"/"
 		(js3-beautify-regexp-node-value n)
 		"/"))
@@ -1362,11 +1327,12 @@ Returns 0 if NODE is nil or its identifier field is nil."
 (defstruct (js3-beautify-string-node
             (:include js3-beautify-node)
             (:constructor nil)
-            (:constructor make-js3-beautify-string-node (&key (type js3-beautify-STRING)
-                                                     (pos js3-beautify-token-beg)
-                                                     (len (- js3-beautify-ts-cursor
-                                                             js3-beautify-token-beg))
-                                                     (value js3-beautify-ts-string))))
+            (:constructor make-js3-beautify-string-node
+			  (&key (type js3-beautify-STRING)
+				(pos js3-beautify-token-beg)
+				(len (- js3-beautify-ts-cursor
+					js3-beautify-token-beg))
+				(value js3-beautify-ts-string))))
   "String literal.
 Escape characters are not evaluated; e.g. \n is 2 chars in value field.
 You can tell the quote type by looking at the first character."
@@ -1377,16 +1343,17 @@ You can tell the quote type by looking at the first character."
 
 (defun js3-beautify-print-string-node (n i)
   (setq js3-beautify-curstr
-	(concat js3-beautify-curstr (js3-beautify-make-pad i)
+	(concat js3-beautify-curstr
 		(js3-beautify-node-string n))))
 
 (defstruct (js3-beautify-array-node
             (:include js3-beautify-node)
             (:constructor nil)
-            (:constructor make-js3-beautify-array-node (&key (type js3-beautify-ARRAYLIT)
-                                                    (pos js3-beautify-ts-cursor)
-                                                    len
-                                                    elems)))
+            (:constructor make-js3-beautify-array-node
+			  (&key (type js3-beautify-ARRAYLIT)
+				(pos js3-beautify-ts-cursor)
+				len
+				elems)))
   "AST node for an array literal."
   elems)  ; list of expressions.  [foo,,bar] yields a nil middle element.
 
@@ -1398,7 +1365,7 @@ You can tell the quote type by looking at the first character."
     (js3-beautify-visit-ast e v)))
 
 (defun js3-beautify-print-array-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "["))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "["))
   (js3-beautify-print-list (js3-beautify-array-node-elems n))
   (setq js3-beautify-curstr (concat js3-beautify-curstr "]")))
 
@@ -1420,7 +1387,7 @@ You can tell the quote type by looking at the first character."
     (js3-beautify-visit-ast e v)))
 
 (defun js3-beautify-print-object-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i) "{"))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "{"))
   (js3-beautify-print-list (js3-beautify-object-node-elems n))
   (setq js3-beautify-curstr (concat js3-beautify-curstr "}")))
 
@@ -1441,7 +1408,6 @@ The `right' field is a `js3-beautify-node' representing the initializer value.")
 (put 'cl-struct-js3-beautify-object-prop-node 'js3-beautify-printer 'js3-beautify-print-object-prop-node)
 
 (defun js3-beautify-print-object-prop-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
   (js3-beautify-print-ast (js3-beautify-object-prop-node-left n) 0)
   (setq js3-beautify-curstr (concat js3-beautify-curstr ":"))
   (js3-beautify-print-ast (js3-beautify-object-prop-node-right n) 0))
@@ -1463,22 +1429,19 @@ property `GETTER_SETTER' set to js3-beautify-GET or js3-beautify-SET. ")
 (put 'cl-struct-js3-beautify-getter-setter-node 'js3-beautify-printer 'js3-beautify-print-getter-setter)
 
 (defun js3-beautify-print-getter-setter (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (left (js3-beautify-getter-setter-node-left n))
-        (right (js3-beautify-getter-setter-node-right n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr (if (= (js3-beautify-node-type n) js3-beautify-GET) "get " "set ")))
-    (js3-beautify-print-ast left 0)
-    (js3-beautify-print-ast right 0)))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr (if (= (js3-beautify-node-type n) js3-beautify-GET) "get " "set ")))
+  (js3-beautify-print-ast (js3-beautify-getter-setter-node-left n) 0)
+  (js3-beautify-print-ast (js3-beautify-getter-setter-node-right n) 0))
 
 (defstruct (js3-beautify-prop-get-node
             (:include js3-beautify-infix-node)
             (:constructor nil)
-            (:constructor make-js3-beautify-prop-get-node (&key (type js3-beautify-GETPROP)
-                                                       (pos js3-beautify-ts-cursor)
-                                                       len
-                                                       left
-                                                       right)))
+            (:constructor make-js3-beautify-prop-get-node
+			  (&key (type js3-beautify-GETPROP)
+				(pos js3-beautify-ts-cursor)
+				len
+				left
+				right)))
   "AST node for a dotted property reference, e.g. foo.bar or foo().bar")
 
 (put 'cl-struct-js3-beautify-prop-get-node 'js3-beautify-visitor 'js3-beautify-visit-prop-get-node)
@@ -1489,7 +1452,6 @@ property `GETTER_SETTER' set to js3-beautify-GET or js3-beautify-SET. ")
   (js3-beautify-visit-ast (js3-beautify-prop-get-node-right n) v))
 
 (defun js3-beautify-print-prop-get-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
   (js3-beautify-print-ast (js3-beautify-prop-get-node-left n) 0)
   (setq js3-beautify-curstr (concat js3-beautify-curstr "."))
   (js3-beautify-print-ast (js3-beautify-prop-get-node-right n) 0))
@@ -1520,7 +1482,6 @@ property `GETTER_SETTER' set to js3-beautify-GET or js3-beautify-SET. ")
     (js3-beautify-visit-ast (js3-beautify-elem-get-node-element n) v)))
 
 (defun js3-beautify-print-elem-get-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
   (js3-beautify-print-ast (js3-beautify-elem-get-node-target n) 0)
   (setq js3-beautify-curstr (concat js3-beautify-curstr "["))
   (js3-beautify-print-ast (js3-beautify-elem-get-node-element n) 0)
@@ -1551,7 +1512,6 @@ property `GETTER_SETTER' set to js3-beautify-GET or js3-beautify-SET. ")
     (js3-beautify-visit-ast arg v)))
 
 (defun js3-beautify-print-call-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
   (js3-beautify-print-ast (js3-beautify-call-node-target n) 0)
   (setq js3-beautify-curstr (concat js3-beautify-curstr "("))
   (js3-beautify-print-list (js3-beautify-call-node-args n))
@@ -1574,7 +1534,6 @@ property `GETTER_SETTER' set to js3-beautify-GET or js3-beautify-SET. ")
   (js3-beautify-visit-ast (js3-beautify-yield-node-value n) v))
 
 (defun js3-beautify-print-yield-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
   (setq js3-beautify-curstr (concat js3-beautify-curstr "yield"))
   (when (js3-beautify-yield-node-value n)
     (setq js3-beautify-curstr (concat js3-beautify-curstr " "))
@@ -1599,7 +1558,6 @@ as opposed to required parens such as those enclosing an if-conditional."
   (js3-beautify-visit-ast (js3-beautify-paren-node-expr n) v))
 
 (defun js3-beautify-print-paren-node (n i)
-  (setq js3-beautify-curstr (concat js3-beautify-curstr (js3-beautify-make-pad i)))
   (setq js3-beautify-curstr (concat js3-beautify-curstr "("))
   (js3-beautify-print-ast (js3-beautify-paren-node-expr n) 0)
   (setq js3-beautify-curstr (concat js3-beautify-curstr ")")))
@@ -1634,19 +1592,15 @@ as opposed to required parens such as those enclosing an if-conditional."
   (js3-beautify-visit-ast (js3-beautify-array-comp-node-filter n) v))
 
 (defun js3-beautify-print-array-comp-node (n i)
-  (let ((pad (js3-beautify-make-pad i))
-        (result (js3-beautify-array-comp-node-result n))
-        (loops (js3-beautify-array-comp-node-loops n))
-        (filter (js3-beautify-array-comp-node-filter n)))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr pad "["))
-    (js3-beautify-print-ast result 0)
-    (dolist (l loops)
-      (setq js3-beautify-curstr (concat js3-beautify-curstr " "))
-      (js3-beautify-print-ast l 0))
-    (when filter
-      (setq js3-beautify-curstr (concat js3-beautify-curstr " if ("))
-      (js3-beautify-print-ast filter 0))
-    (setq js3-beautify-curstr (concat js3-beautify-curstr ")]"))))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr "["))
+  (js3-beautify-print-ast (js3-beautify-array-comp-node-result n) 0)
+  (dolist (l (js3-beautify-array-comp-node-loops n))
+    (setq js3-beautify-curstr (concat js3-beautify-curstr " "))
+    (js3-beautify-print-ast l 0))
+  (when (js3-beautify-array-comp-node-filter n)
+    (setq js3-beautify-curstr (concat js3-beautify-curstr " if ("))
+    (js3-beautify-print-ast (js3-beautify-array-comp-node-filter n) 0))
+  (setq js3-beautify-curstr (concat js3-beautify-curstr ")]")))
 
 (defstruct (js3-beautify-array-comp-loop-node
             (:include js3-beautify-for-in-node)

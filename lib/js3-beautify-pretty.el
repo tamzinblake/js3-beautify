@@ -6,17 +6,17 @@
   "Pretty print the Javascript code in the ast tree."
   (interactive)
   (let ((ast (js3-beautify-parse)))
-    (js3-beautify-pretty-print-line ast)))
+    (js3-beautify-pretty-print-line ast nil)))
 
-(defun js3-beautify-pretty-print-line (node)
+(defun js3-beautify-pretty-print-line (node end-p)
   "Pretty print a node, using as few lines as possible."
   (if node
       (let ((line (js3-beautify-print-line node)))
-	(if (> (length line) js3-beautify-max-columns)
+	(if (or end-p (< (length line) js3-beautify-max-columns))
 	    (progn
 	      (insert line)
 	      nil)
-	  (js3-beautify-visit-ast (node #'js3-beautify-pretty-print-line))))
+	  (js3-beautify-visit-ast node #'js3-beautify-pretty-print-line)))
     nil))
 
 (defun js3-beautify-print-line (node)
