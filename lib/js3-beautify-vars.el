@@ -74,13 +74,6 @@ regardless of the beginning bracket position."
   :type 'boolean)
 (js3-beautify-mark-safe-local 'js3-beautify-consistent-level-indent-inner-bracket 'booleanp)
 
-(defcustom js3-beautify-indent-on-enter-key nil
-  "Non-nil to have Enter/Return key indent the line.
-This is unusual for Emacs modes but common in IDEs like Eclipse."
-  :type 'boolean
-  :group 'js3-beautify)
-(js3-beautify-mark-safe-local 'js3-beautify-indent-on-enter-key 'booleanp)
-
 (defcustom js3-beautify-enter-indents-newline nil
   "Non-nil to have Enter/Return key indent the newly-inserted line.
 This is unusual for Emacs modes but common in IDEs like Eclipse."
@@ -750,98 +743,6 @@ rather than trying to line up to dots."
   :group 'js3-beautify)
 (js3-beautify-mark-safe-local 'js3-beautify-lazy-dots 'booleanp)
 
-(defvar js3-beautify-map
-  (let ((map (make-sparse-keymap))
-        keys)
-    (define-key map [mouse-1] #'js3-beautify-show-node)
-    (define-key map (kbd "C-m") #'js3-beautify-enter-key)
-    (when js3-beautify-rebind-eol-bol-keys
-      (define-key map (kbd "C-a") #'js3-beautify-beginning-of-line)
-      (define-key map (kbd "C-e") #'js3-beautify-end-of-line))
-    (define-key map (kbd "C-c C-e") #'js3-beautify-hide-element)
-    (define-key map (kbd "C-c C-s") #'js3-beautify-show-element)
-    (define-key map (kbd "C-c C-a") #'js3-beautify-show-all)
-    (define-key map (kbd "C-c C-f") #'js3-beautify-toggle-hide-functions)
-    (define-key map (kbd "C-c C-t") #'js3-beautify-toggle-hide-comments)
-    (define-key map (kbd "C-c C-o") #'js3-beautify-toggle-element)
-    (define-key map (kbd "C-c C-w") #'js3-beautify-toggle-warnings-and-errors)
-    (define-key map (kbd "C-c C-`") #'js3-beautify-next-error)
-    ;; also define user's preference for next-error, if available
-    (if (setq keys (where-is-internal #'next-error))
-        (define-key map (car keys) #'js3-beautify-next-error))
-    (define-key map (or (car (where-is-internal #'mark-defun))
-                        (kbd "M-C-h"))
-      #'js3-beautify-mark-defun)
-    (define-key map (or (car (where-is-internal #'narrow-to-defun))
-                        (kbd "C-x nd"))
-      #'js3-beautify-narrow-to-defun)
-    (define-key map [down-mouse-3] #'js3-beautify-down-mouse-3)
-    (when js3-beautify-auto-indent-p
-      (mapc (lambda (key)
-              (define-key map key #'js3-beautify-insert-and-indent))
-            js3-beautify-electric-keys))
-
-    (define-key map [menu-bar javascript]
-      (cons "JavaScript" (make-sparse-keymap "JavaScript")))
-
-    (define-key map [menu-bar javascript customize-js3-beautify]
-      '(menu-item "Customize js3-beautify" js3-beautify-customize
-                  :help "Customize the behavior of this mode"))
-
-    (define-key map [menu-bar javascript js3-beautify-force-refresh]
-      '(menu-item "Force buffer refresh" js3-beautify-reset
-                  :help "Re-parse the buffer from scratch"))
-
-    (define-key map [menu-bar javascript separator-2]
-      '("--"))
-
-    (define-key map [menu-bar javascript next-error]
-      '(menu-item "Next warning or error" js3-beautify-next-error
-                  :enabled (and js3-beautify-ast
-                                (or (js3-beautify-ast-root-errors js3-beautify-ast)
-                                    (js3-beautify-ast-root-warnings js3-beautify-ast)))
-                  :help "Move to next warning or error"))
-
-    (define-key map [menu-bar javascript display-errors]
-      '(menu-item "Show errors and warnings" js3-beautify-display-warnings-and-errors
-                  :visible (not js3-beautify-show-parse-errors)
-                  :help "Turn on display of warnings and errors"))
-
-    (define-key map [menu-bar javascript hide-errors]
-      '(menu-item "Hide errors and warnings" js3-beautify-hide-warnings-and-errors
-                  :visible js3-beautify-show-parse-errors
-                  :help "Turn off display of warnings and errors"))
-
-    (define-key map [menu-bar javascript separator-1]
-      '("--"))
-
-    (define-key map [menu-bar javascript js3-beautify-toggle-function]
-      '(menu-item "Show/collapse element" js3-beautify-toggle-element
-                  :help "Hide or show function body or comment"))
-
-    (define-key map [menu-bar javascript show-comments]
-      '(menu-item "Show block comments" js3-beautify-toggle-hide-comments
-                  :visible js3-beautify-comments-hidden
-                  :help "Expand all hidden block comments"))
-
-    (define-key map [menu-bar javascript hide-comments]
-      '(menu-item "Hide block comments" js3-beautify-toggle-hide-comments
-                  :visible (not js3-beautify-comments-hidden)
-                  :help "Show block comments as /*...*/"))
-
-    (define-key map [menu-bar javascript show-all-functions]
-      '(menu-item "Show function bodies" js3-beautify-toggle-hide-functions
-                  :visible js3-beautify-functions-hidden
-                  :help "Expand all hidden function bodies"))
-
-    (define-key map [menu-bar javascript hide-all-functions]
-      '(menu-item "Hide function bodies" js3-beautify-toggle-hide-functions
-                  :visible (not js3-beautify-functions-hidden)
-                  :help "Show {...} for all top-level function bodies"))
-
-    map)
-  "Keymap used in `js3-beautify' buffers.")
-
 (defconst js3-beautify-identifier-re "[a-zA-Z_$][a-zA-Z0-9_$]*")
 
 (defvar js3-beautify-//-comment-re "^\\(\\s-*\\)//.+"
@@ -907,6 +808,7 @@ First match-group is the leading whitespace.")
 (defvar js3-beautify-last-indented-line -1)
 
 (defvar js3-beautify-curstr "")
+(defvar js3-beautify-curln "")
 
 (eval-when-compile
   (defvar c-paragraph-start nil)

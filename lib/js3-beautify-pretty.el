@@ -7,13 +7,14 @@
 (defun js3-beautify-ugly-print ()
   "Try to dump the ast."
   (interactive)
-  (insert (js3-beautify-print-line (js3-beautify-parse))))
+  (js3-beautify-reparse)
+  (insert (js3-beautify-print-line js3-beautify-ast)))
 
 (defun js3-beautify-pretty-print ()
   "Pretty print the Javascript code in the ast tree."
   (interactive)
-  (let ((ast (js3-beautify-parse)))
-    (js3-beautify-pretty-print-line ast nil)))
+  (js3-beautify-reparse)
+  (js3-beautify-pretty-print-line js3-beautify-ast nil))
 
 (defun js3-beautify-pretty-print-line (node end-p)
   "Pretty print a node, using as few lines as possible."

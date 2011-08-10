@@ -57,7 +57,7 @@ function commaFirstStyle () {
   //test c5
   //dot lines up under dot
   a.b
-   .c()
+      .c()
 
   //test c6
   //commas lined up under 'n' in 'return'.
@@ -143,16 +143,16 @@ function commaFirstStyle () {
   //issue #6
   a = { b: c /*multiline { ,
                comment*/
-      , d: e
+                  , d: e
       }
 
   //test c16
   //line up operators under first operator on line in same subexpression
   //issue #7
   var zoomThumbHtml = '<a target="_blank" id="zoomThumbnailLink"'
-                    + '   title="Click to see full-size"'
-                    + '   href="' + Ext.BLANK_IMAGE_URL + '">'
-                    + '<img src="' + Ext.BLANK_IMAGE_URL + '"'
+    + '   title="Click to see full-size"'
+                  + '   href="' + Ext.BLANK_IMAGE_URL + '">'
+             + '<img src="' + Ext.BLANK_IMAGE_URL + '"'
 
   //test c16
   //line up operators without trailing spaces
@@ -166,7 +166,7 @@ function commaFirstStyle () {
 
   //test c17
   //properly ignoring '{' in strings
-  //issue #12
+        //issue #12
   var foo = { prop: '{baz'
             }
     , bar
@@ -175,7 +175,7 @@ function commaFirstStyle () {
   //'+ e' should line up with ': c'
   //issue #21
   a = { b : c + d
-          + e
+      + e
       }
 
   //test c19
@@ -184,7 +184,7 @@ function commaFirstStyle () {
   //issue #22
   a = { f: function () {
           var a = g
-                + h
+            + h
 
           return [ a
                  , g
@@ -195,27 +195,27 @@ function commaFirstStyle () {
   //test c20
   //a big jumble of different things
   var rv = { a: [ b
-                , ( c
-                  + d
-                  )
-                , e
+                     , ( c
+                       + d
+                       )
+                     , e
                 ]
-           , f: function ( g /* silly multiline
-                                comment */
-                         , h
-                         ) {
-               var a = g
-                     + h
+                , f: function ( g /* silly multiline
+                                     comment */
+      , h
+                              ) {
+                    var a = g
+                      + h
 
-               return [ a
-                      , g
-                      ]
-             }
+                        return [ a
+            , g
+                               ]
+                  }
            }
-    , rv2 = a
+                     , rv2 = a
 
   //test c21
-  // ? : operators
+                        // ? : operators
   // : should line up with open paren
   a = ( b ? c
       : d ? e
@@ -241,14 +241,14 @@ function commaFirstStyle () {
                 u.method( function(data) {
                   res.json(data)
                 }
-                        , function(data) {
-                          res.json(data)
-                        }
+                          , function(data) {
+                            res.json(data)
+                          }
                         )
               }
-            , callback: function(data){
-                res.json()
-              }
+                                         , callback: function(data){
+                                             res.json()
+                                           }
             })
   res.writeHead(201)
 
@@ -258,7 +258,7 @@ function commaFirstStyle () {
   //issue #29
 
   x = ( a != b
-     && c != d
+      && c != d
       )
 
   //test c25
@@ -266,7 +266,7 @@ function commaFirstStyle () {
   //issue #30
 
   var boolReg = '^(' + boolFields.join('|') + ')$'
-    , ignoreReg = '^(' + ignoreFields.join('|') + ')$'
+                                      , ignoreReg = '^(' + ignoreFields.join('|') + ')$'
 
   //test c26
   //comma should line up with the ( even though it's a weird case.
@@ -286,19 +286,19 @@ function commaFirstStyle () {
   // this is a weird but consistent case - to avoid, use parens.
 
   a = b | c & d - e * f
-                * g
-            + h
-        & i
-    | j
+     * g
+     + h
+     & i
+     | j
 
   //test c28
   //similar to test c27
   //all operators should line up with parens
 
   a = ( b | ( c & ( d - ( e * f
-                        * g
+    * g
                         )
-                  + h
+           + h
                   )
             & i
             )
@@ -312,11 +312,11 @@ function commaFirstStyle () {
   // && should line up vertically
 
   a = b
-    = c
-    = d < e || f > g
-            || h < i && j < k
-                     && l > m
-            || n < b
+            = c
+             = d < e || f > g
+        || h < i && j < k
+                             && l > m
+                        || n < b
 
   //test c30
   //comparison operators
@@ -324,11 +324,11 @@ function commaFirstStyle () {
   //>= i !== j === k should all line up under !== f
   // != l == m should both line up under = b
   a = b == c != d === e !== f >= g <= h
-                         >= i
+                        >= i
                         !== j
-                        === k
-   != l
-   == m
+                                   === k
+                                   != l
+                        == m
 
   //tests c31-c33
   //various nice lining up of dots
@@ -337,25 +337,25 @@ function commaFirstStyle () {
   var someKindOfObject = {}
 
   //test c31
-  //dots should line up
+      //dots should line up
 
   var xyz = someKindOfObject.foo("asdf")
-                            .bar("bloo")
-                            .bloo("blerg")
+          .bar("bloo")
+                                .bloo("blerg")
 
   //test c32
   //dots should be indented once from the object name
 
   var xyx = someKindOfObject
-              .foo("asdf")
-              .bar("bloo")
+                         .foo("asdf")
+                                     .bar("bloo")
 
   //test c33
   //dots should line up
 
   someKindOfObject.doSomething()
-                  .doSomethingElse()
-                  .yetAnotherSomething()
+                                         .doSomethingElse()
+                              .yetAnotherSomething()
 
   //end comma-first tests
 
@@ -377,12 +377,12 @@ function commaLastStyle () {
       g = "gnu",
       h = "hat",
       i = "ibu",
-      j = "joe",
-      k = "kit",
+  j = "joe",
+  k = "kit",
       l = "lay",
       m = "man",
-      n = "now",
-      aPrettyLongVariableName
+  n = "now",
+  aPrettyLongVariableName
 
   //test s2
   //indent continued expressions by one level
@@ -479,7 +479,7 @@ function otherTests () {
 //Edit: the following is no longer supported - indentation of '+' is undefined
 //Rationale: this is never useful JS code
 1
-                                         + 2
+                      + 2
 
 //test z2
 //comma should be indented to column 0 - emacs should not throw an error
@@ -487,7 +487,7 @@ function otherTests () {
 //Edit: the following is no longer supported - indentation of ',' is undefined
 //Rationale: this is never useful JS code
 1
-                                         , 2
+                      , 2
 
 //test z3
 //+ should correctly indent to first column without throwing an error
@@ -495,3 +495,226 @@ function otherTests () {
 ( 1
 + 2
 )
+
+
+function commaFirstStyle () {
+  var a = "ape"
+    , b = "bat"
+    , c = "cat"
+    , d = "dog"
+    , e = "elf"
+    , f = "fly"
+    , g = "gnu"
+    , h = "hat"
+    , i = "ibu"
+    , j = "joe"
+    , k = "kit"
+    , l = "lay"
+    , m = "man"
+    , n = "now"
+    , aPrettyLongVariableName
+
+  a = b + c - d * e / f % g < h > i & j ^ k | l ? m : n
+  a = ( b + c )
+  a = { b: c
+      , d: e
+      }
+  a.b.c()
+  if ( a ) {
+    return 1, 2, 3, 4
+  }
+  if ( b ) {
+    return [ 1
+           , 2
+           , 3
+           , 4
+           ]
+  }
+  a( b
+   , c
+   )
+  a( aPrettyLongVariableName
+   , "A string, which \"has some useful information"
+   , "If you put these all together, it'd be too long"
+   , { a: "is for antelope"
+     , b: "is for bat"
+     }
+   , 42
+   )
+  a( aPrettyLongVariableName
+   , 'A string, which \'has some useful information'
+   , 'If you put these all together, it\'d be too long'
+   , { a: 'is for antelope'
+     , b: 'is for bat'
+     }
+   , 42
+   )
+  a.b( c.d
+     ).e()
+  a = { b: { c: d
+           , e: f
+           }
+      , c: d
+      }
+  a = ( b + ( c / d ) * e )
+  a = [ [ b
+        , c
+        ]
+      , [ d
+        , e
+        ]
+      , f
+      ]
+  a = { b: c
+      , d: e
+      }
+  var zoomThumbHtml = '<a target="_blank" id="zoomThumbnailLink"' + '   title="Click to see full-size"' + '   href="' + Ext.BLANK_IMAGE_URL + '">' + '<img src="' + Ext.BLANK_IMAGE_URL + '"'
+
+
+  function test () {
+    var x
+
+    x.report( "test1" + "test2"
+            )
+  }
+  var foo = { prop: '{baz'
+            }
+    , bar
+
+  a = { b: c + d + e
+      }
+  a = { f: function () {
+          var a = g + h
+
+          return [ a
+                 , g
+                 ]
+        }
+
+      }
+  var rv = { a: [ b
+                , ( c + d )
+                , e
+                ]
+           , f: function (g, h) {
+               var a = g + h
+
+               return [ a
+                      , g
+                      ]
+             }
+
+           }
+    , rv2 = a
+
+  a = ( b ? c : d ? e : f )
+  var x = require( "./test/test"
+                 ).something
+                 , y = require( './test2'
+                              )
+
+  something( { value: "data"
+             , errback: function (code, e) {
+                 var u = new Something( user_data
+                                      )
+
+                 u.method( function (data) {
+                   res.json( data
+                           )
+                 }
+
+                         , function (data) {
+                           res.json( data
+                                   )
+                         }
+
+                         )
+               }
+
+             , callback: function (data) {
+                 res.json()
+               }
+
+             }
+           )
+  res.writeHead( 201
+               )
+  x = ( a != b && c != d )
+  var boolReg = '^(' + boolFields.join( '|'
+                                      ) + ')$'
+    , ignoreReg = '^(' + ignoreFields.join( '|'
+                                          ) + ')$'
+
+  foo( a + b
+     , c + d
+     )
+  a = b | c & d - e * f * g + h & i | j
+  a = ( b | ( c & ( d - ( e * f * g ) + h ) & i ) | j )
+  a = b = c = d < e || f > g || h < i && j < k && l > m || n < b
+  a = b == c != d === e !== f >= g <= h >= i !== j === k != l == m
+  var someKindOfObject = {}
+
+  var xyz = someKindOfObject.foo( "asdf"
+                                ).bar( "bloo"
+                                     ).bloo( "blerg"
+                                           )
+
+  var xyx = someKindOfObject.foo( "asdf"
+                                ).bar( "bloo"
+                                     )
+
+  someKindOfObject.doSomething().doSomethingElse().yetAnotherSomething()
+  return 1
+}
+
+function commaLastStyle () {
+  var a = "ape"
+    , b = "bat"
+    , c = "cat"
+    , d = "dog"
+    , e = "elf"
+    , f = "fly"
+    , g = "gnu"
+    , h = "hat"
+    , i = "ibu"
+    , j = "joe"
+    , k = "kit"
+    , l = "lay"
+    , m = "man"
+    , n = "now"
+    , aPrettyLongVariableName
+
+  a = b + c - d * e / f % g < h > i & j ^ k | l ? m : n
+  a = ( b + c )
+  a = { b: c
+      , d: e
+      }
+  a.b.c()
+  if ( a ) {
+    return [ 1
+           , 2
+           , 3
+           , 4
+           ]
+  }
+  a( b
+   , c
+   )
+  var a1
+
+  var b1
+
+  return 1
+}
+
+function otherTests () {
+  var f = function () {
+    return 1
+  }
+
+
+  return 1
+}
+1 + 2
+1, 2( 1 + 2
+    )

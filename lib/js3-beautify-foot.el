@@ -8,7 +8,6 @@
   (interactive)
   (js3-beautify-check-compat)
   (set-syntax-table js3-beautify-syntax-table)
-  (use-local-map js3-beautify-map)
   (make-local-variable 'comment-start)
   (make-local-variable 'comment-end)
   (make-local-variable 'comment-start-skip)
@@ -43,12 +42,13 @@
   (if js3-beautify-emacs22
       (c-setup-paragraph-variables))
 
-  (set (make-local-variable 'line-move-ignore-invisible) t)
   (set (make-local-variable 'forward-sexp-function) #'js3-beautify-forward-sexp)
   (setq js3-beautify-buffer-dirty-p t
         js3-beautify-parsing nil)
   (js3-beautify-reparse)
-  (js3-beautify-pretty-print)
+  (js3-beautify-ugly-print)
+  (delete-trailing-whitespace)
+  (indent-region (point-min) (point-max) nil)
   (js3-beautify-exit))
 
 (defun js3-beautify-check-compat ()
