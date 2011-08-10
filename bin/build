@@ -2,5 +2,5 @@
 
 git status 2> /dev/null 1> /dev/null || (echo "Not in git repository" && exit 0)
 cd $(git rev-parse --show-toplevel) || (echo "Can't find root directory" && exit 0)
-cat lib/js3-beautify-head.el lib/js3-beautify-vars.el lib/js3-beautify-util.el lib/js3-beautify-scan.el lib/js3-beautify-messages.el lib/js3-beautify-ast.el lib/js3-beautify-parse.el lib/js3-beautify-indent.el lib/js3-beautify-pretty.el lib/js3-beautify-foot.el > js3-beautify.el
+cat lib/js3-beautify-head.el lib/js3-beautify-vars.el lib/js3-beautify-util.el lib/js3-beautify-scan.el lib/js3-beautify-messages.el lib/js3-beautify-ast.el lib/js3-beautify-parse.el lib/js3-beautify-indent.el lib/js3-beautify-foot.el > js3-beautify.el
 emacs --batch -f batch-byte-compile js3-beautify.el

@@ -46,8 +46,11 @@
   (setq js3-beautify-buffer-dirty-p t
         js3-beautify-parsing nil)
   (js3-beautify-reparse)
-  (js3-beautify-ugly-print)
+  (js3-beautify-print-tree js3-beautify-ast)
+  (erase-buffer)
+  (insert js3-beautify-curstr)
   (delete-trailing-whitespace)
+  (js3-beautify-reparse)
   (indent-region (point-min) (point-max) nil)
   (js3-beautify-exit))
 
@@ -62,7 +65,7 @@
     (error "js3-beautify requires GNU Emacs version 21 or higher")))
 
 (defun js3-beautify-exit ()
-  (interactive)
+  (setq js3-beautify-curstr "")
   (setq js3-beautify-ast nil))
 
 (defun js3-beautify-before-save ()
@@ -157,7 +160,6 @@ This ensures that the counts and `next-error' are correct."
 (defun js3-beautify-beginning-of-line ()
   "Toggles point between bol and first non-whitespace char in line.
 Also moves past comment delimiters when inside comments."
-  (interactive)
   (let (node beg)
     (cond
      ((bolp)
@@ -176,7 +178,6 @@ Also moves past comment delimiters when inside comments."
 
 (defun js3-beautify-end-of-line ()
   "Toggles point between eol and last non-whitespace char in line."
-  (interactive)
   (if (eolp)
       (skip-chars-backward " \t")
     (goto-char (point-at-eol))))
@@ -240,7 +241,6 @@ Returns nil if point is not in a function."
   "Move forward across one statement or balanced expression.
 With ARG, do it that many times.  Negative arg -N means
 move backward across N balanced expressions."
-  (interactive "p")
   (setq arg (or arg 1))
   (if js3-beautify-buffer-dirty-p
       (js3-beautify-wait-for-parse #'js3-beautify-forward-sexp))
@@ -307,7 +307,6 @@ Parent is defined as the enclosing script or function."
 (defun js3-beautify-beginning-of-defun ()
   "Go to line on which current function starts, and return non-nil.
 If we're not in a function, go to beginning of previous script-level element."
-  (interactive)
   (let ((parent (js3-beautify-node-parent-script-or-fn (js3-beautify-node-at-point)))
         pos sib)
     (cond
@@ -320,7 +319,6 @@ If we're not in a function, go to beginning of previous script-level element."
 (defun js3-beautify-end-of-defun ()
   "Go to the char after the last position of the current function.
 If we're not in a function, skips over the next script-level element."
-  (interactive)
   (let ((parent (js3-beautify-node-parent-script-or-fn (js3-beautify-node-at-point))))
     (if (not (js3-beautify-function-node-p parent))
         ;; punt:  skip over next script-level element beyond point
@@ -330,12 +328,7 @@ If we're not in a function, skips over the next script-level element."
 
 (defun js3-beautify-mark-defun (&optional allow-extend)
   "Put mark at end of this function, point at beginning.
-The function marked is the one that contains point.
-
-Interactively, if this command is repeated,
-or (in Transient Mark mode) if the mark is active,
-it marks the next defun after the ones already marked."
-  (interactive "p")
+The function marked is the one that contains point."
   (let (extended)
     (when (and allow-extend
                (or (and (eq last-command this-command) (mark t))
@@ -376,7 +369,6 @@ it marks the next defun after the ones already marked."
 
 (defun js3-beautify-narrow-to-defun ()
   "Narrow to the function enclosing point."
-  (interactive)
   (let* ((node (js3-beautify-node-at-point (point) t))  ; skip comments
          (fn (if (js3-beautify-script-node-p node)
                  node

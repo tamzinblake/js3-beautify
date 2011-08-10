@@ -2953,7 +2953,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-do-node-condition n) v))
 
 (defun js3-beautify-print-do-node (n i)
-  (js3-beautify-concat-curstr "do {")
+  (js3-beautify-concat-curstr "do {\n")
   (dolist (kid (js3-beautify-block-node-kids (js3-beautify-do-node-body n)))
     (js3-beautify-print-ast kid (1+ i)))
   (js3-beautify-concat-curstr "} while (")
@@ -2983,9 +2983,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
 (defun js3-beautify-print-while-node (n i)
   (js3-beautify-concat-curstr "while (")
   (js3-beautify-print-ast (js3-beautify-while-node-condition n) 0)
-  (js3-beautify-concat-curstr ") {")
+  (js3-beautify-concat-curstr ") {\n")
   (js3-beautify-print-body (js3-beautify-while-node-body n) (1+ i))
-  (js3-beautify-concat-curstr "}"))
+  (js3-beautify-concat-curstr "}\n"))
 
 (defstruct (js3-beautify-for-node
             (:include js3-beautify-loop-node)
@@ -3022,7 +3022,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-print-ast (js3-beautify-for-node-update n) 0)
   (js3-beautify-concat-curstr ") {\n")
   (js3-beautify-print-body (js3-beautify-for-node-body n) (1+ i))
-  (js3-beautify-concat-curstr "}"))
+  (js3-beautify-concat-curstr "}\n"))
 
 (defstruct (js3-beautify-for-in-node
             (:include js3-beautify-loop-node)
@@ -3062,9 +3062,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-print-ast (js3-beautify-for-in-node-iterator n) 0)
   (js3-beautify-concat-curstr " in ")
   (js3-beautify-print-ast (js3-beautify-for-in-node-object n) 0)
-  (js3-beautify-concat-curstr ") {")
+  (js3-beautify-concat-curstr ") {\n")
   (js3-beautify-print-body (js3-beautify-for-in-node-body n) (1+ i))
-  (js3-beautify-concat-curstr "}"))
+  (js3-beautify-concat-curstr "}\n"))
 
 (defstruct (js3-beautify-return-node
             (:include js3-beautify-node)
@@ -3161,9 +3161,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
 (defun js3-beautify-print-try-node (n i)
   (let ((catches (js3-beautify-try-node-catch-clauses n))
         (finally (js3-beautify-try-node-finally-block n)))
-    (js3-beautify-concat-curstr "try {")
+    (js3-beautify-concat-curstr "try {\n")
     (js3-beautify-print-body (js3-beautify-try-node-try-block n) (1+ i))
-    (js3-beautify-concat-curstr "}")
+    (js3-beautify-concat-curstr "}\n")
     (when catches
       (dolist (catch catches)
         (js3-beautify-print-ast catch i)))
@@ -3207,9 +3207,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (when (js3-beautify-catch-node-guard-kwd n)
     (js3-beautify-concat-curstr " if ")
     (js3-beautify-print-ast (js3-beautify-catch-node-guard-expr n) 0))
-  (js3-beautify-concat-curstr ") {")
+  (js3-beautify-concat-curstr ") {\n")
   (js3-beautify-print-body (js3-beautify-catch-node-block n) (1+ i))
-  (js3-beautify-concat-curstr "}"))
+  (js3-beautify-concat-curstr "}\n"))
 
 (defstruct (js3-beautify-finally-node
             (:include js3-beautify-node)
@@ -3229,9 +3229,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-finally-node-body n) v))
 
 (defun js3-beautify-print-finally-node (n i)
-  (js3-beautify-concat-curstr " finally {")
+  (js3-beautify-concat-curstr " finally {\n")
   (js3-beautify-print-body (js3-beautify-finally-node-body n) (1+ i))
-  (js3-beautify-concat-curstr "}"))
+  (js3-beautify-concat-curstr "}\n"))
 
 (defstruct (js3-beautify-switch-node
             (:include js3-beautify-node)
@@ -3342,9 +3342,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
 (defun js3-beautify-print-with-node (n i)
   (js3-beautify-concat-curstr "with (")
   (js3-beautify-print-ast (js3-beautify-with-node-object n) 0)
-  (js3-beautify-concat-curstr ") {")
+  (js3-beautify-concat-curstr ") {\n")
   (js3-beautify-print-body (js3-beautify-with-node-body n) (1+ i))
-  (js3-beautify-concat-curstr "}"))
+  (js3-beautify-concat-curstr "}\n"))
 
 (defstruct (js3-beautify-label-node
             (:include js3-beautify-node)
@@ -3532,7 +3532,9 @@ The `params' field is a lisp list of nodes.  Each node is either a simple
               (js3-beautify-concat-curstr ", ")))
     (js3-beautify-concat-curstr ") {\n")
     (js3-beautify-print-body body (1+ i))
-    (js3-beautify-concat-curstr "}\n")))
+    (js3-beautify-concat-curstr "}")
+    (unless expr
+      (js3-beautify-concat-curstr "\n"))))
 
 (defsubst js3-beautify-function-name (node)
   "Return function name for NODE, a `js3-beautify-function-node', or nil if anonymous."
@@ -4759,7 +4761,13 @@ If NODE is the ast-root, returns nil."
 (defun js3-beautify-print-list (args &optional delimiter)
   (let ((oldstr js3-beautify-curstr))
     (js3-beautify-print-list-compact args delimiter)
-    (when (> (length js3-beautify-curln) js3-beautify-max-columns)
+    (when (and (not (string= js3-beautify-curstr oldstr))
+	       (or (> (length js3-beautify-curln) js3-beautify-max-columns)
+		   (let ((c (compare-strings js3-beautify-curstr 0 nil
+					     oldstr 0 nil))
+			 (diffstr))
+		     (setq diffstr (substring js3-beautify-curstr c))
+		     (string-match "\n" diffstr))))
       (setq js3-beautify-curstr oldstr)
       (js3-beautify-concat-curstr "")
       (js3-beautify-print-list-long args delimiter))))
@@ -4791,10 +4799,11 @@ If NODE is the ast-root, returns nil."
 	    (js3-beautify-concat-curstr " ")))))
 
 (defun js3-beautify-print-tree (ast)
-  "Prints an AST to the current buffer.
+  "Prints an AST to js3-beautify-curstr.
 Makes `js3-beautify-ast-parent-nodes' available to the printer functions."
   (let ((max-lisp-eval-depth (max max-lisp-eval-depth 1500)))
-    (js3-beautify-print-ast ast)))
+    (js3-beautify-print-ast ast)
+    (js3-beautify-concat-curstr "\n")))
 
 (defun js3-beautify-print-ast (node &optional indent)
   "Helper function for printing AST nodes.
@@ -8223,42 +8232,6 @@ nil."
       (when (> offset 0) (forward-char offset)))))
 
 ;;; js3-beautify-indent.el ends here
-;;; js3-beautify-pretty.el --- JavaScript pretty printer
-
-;;; Code:
-
-(defvar temp nil)
-
-(defun js3-beautify-ugly-print ()
-  "Try to dump the ast."
-  (interactive)
-  (js3-beautify-reparse)
-  (insert (js3-beautify-print-line js3-beautify-ast)))
-
-(defun js3-beautify-pretty-print ()
-  "Pretty print the Javascript code in the ast tree."
-  (interactive)
-  (js3-beautify-reparse)
-  (js3-beautify-pretty-print-line js3-beautify-ast nil))
-
-(defun js3-beautify-pretty-print-line (node end-p)
-  "Pretty print a node, using as few lines as possible."
-  (if node
-      (if (or end-p (< (length (js3-beautify-print-line node)) js3-beautify-max-columns))
-	  (progn
-	    (insert (js3-beautify-print-line node))
-	    nil)
-	(js3-beautify-visit-ast node #'js3-beautify-pretty-print-line))
-    nil))
-
-(defun js3-beautify-print-line (node)
-  "Try to print a node all on one line, returning as a string."
-  (js3-beautify-print-ast node)
-  (setq temp js3-beautify-curstr)
-  (setq js3-beautify-curstr "")
-  temp)
-
-;;; js3-beautify-pretty.el ends here
 ;;; js3-beautify-foot.el
 
 (eval-when-compile
@@ -8307,8 +8280,11 @@ nil."
   (setq js3-beautify-buffer-dirty-p t
         js3-beautify-parsing nil)
   (js3-beautify-reparse)
-  (js3-beautify-ugly-print)
+  (js3-beautify-print-tree js3-beautify-ast)
+  (erase-buffer)
+  (insert js3-beautify-curstr)
   (delete-trailing-whitespace)
+  (js3-beautify-reparse)
   (indent-region (point-min) (point-max) nil)
   (js3-beautify-exit))
 
@@ -8323,7 +8299,7 @@ nil."
     (error "js3-beautify requires GNU Emacs version 21 or higher")))
 
 (defun js3-beautify-exit ()
-  (interactive)
+  (setq js3-beautify-curstr "")
   (setq js3-beautify-ast nil))
 
 (defun js3-beautify-before-save ()
@@ -8418,7 +8394,6 @@ This ensures that the counts and `next-error' are correct."
 (defun js3-beautify-beginning-of-line ()
   "Toggles point between bol and first non-whitespace char in line.
 Also moves past comment delimiters when inside comments."
-  (interactive)
   (let (node beg)
     (cond
      ((bolp)
@@ -8437,7 +8412,6 @@ Also moves past comment delimiters when inside comments."
 
 (defun js3-beautify-end-of-line ()
   "Toggles point between eol and last non-whitespace char in line."
-  (interactive)
   (if (eolp)
       (skip-chars-backward " \t")
     (goto-char (point-at-eol))))
@@ -8501,7 +8475,6 @@ Returns nil if point is not in a function."
   "Move forward across one statement or balanced expression.
 With ARG, do it that many times.  Negative arg -N means
 move backward across N balanced expressions."
-  (interactive "p")
   (setq arg (or arg 1))
   (if js3-beautify-buffer-dirty-p
       (js3-beautify-wait-for-parse #'js3-beautify-forward-sexp))
@@ -8568,7 +8541,6 @@ Parent is defined as the enclosing script or function."
 (defun js3-beautify-beginning-of-defun ()
   "Go to line on which current function starts, and return non-nil.
 If we're not in a function, go to beginning of previous script-level element."
-  (interactive)
   (let ((parent (js3-beautify-node-parent-script-or-fn (js3-beautify-node-at-point)))
         pos sib)
     (cond
@@ -8581,7 +8553,6 @@ If we're not in a function, go to beginning of previous script-level element."
 (defun js3-beautify-end-of-defun ()
   "Go to the char after the last position of the current function.
 If we're not in a function, skips over the next script-level element."
-  (interactive)
   (let ((parent (js3-beautify-node-parent-script-or-fn (js3-beautify-node-at-point))))
     (if (not (js3-beautify-function-node-p parent))
         ;; punt:  skip over next script-level element beyond point
@@ -8591,12 +8562,7 @@ If we're not in a function, skips over the next script-level element."
 
 (defun js3-beautify-mark-defun (&optional allow-extend)
   "Put mark at end of this function, point at beginning.
-The function marked is the one that contains point.
-
-Interactively, if this command is repeated,
-or (in Transient Mark mode) if the mark is active,
-it marks the next defun after the ones already marked."
-  (interactive "p")
+The function marked is the one that contains point."
   (let (extended)
     (when (and allow-extend
                (or (and (eq last-command this-command) (mark t))
@@ -8637,7 +8603,6 @@ it marks the next defun after the ones already marked."
 
 (defun js3-beautify-narrow-to-defun ()
   "Narrow to the function enclosing point."
-  (interactive)
   (let* ((node (js3-beautify-node-at-point (point) t))  ; skip comments
          (fn (if (js3-beautify-script-node-p node)
                  node
