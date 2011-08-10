@@ -1,22 +1,22 @@
-## js3-mode ##
+## js3-beautify ##
 
-A chimeric fork of js-mode (included with emacs 24) and [js2-mode](http://code.google.com/p/js2-mode/) that supports comma-first style and other quirks.
+A Javascript pretty-printer for emacs.
 
-The goal of this project was to get a javascript mode working that supports [npm style](https://github.com/isaacs/npm/blob/master/doc/coding-style.md), but it turns out this mode is compatible with other styles as well.
-
-Notably, js3-mode does not support js2-mode's bounce-indent, though it does support several popular indentation styles.
+Initially supports only [npm style](https://github.com/isaacs/npm/blob/master/doc/coding-style.md).
 
 ## Credits ##
 
 Created by [Thom Blake](https://github.com/thomblake).
 
-For more credits, see https://github.com/thomblake/js3-mode/wiki/Credits
+Based on code from [js3-mode](https://github.com/thomblake/js3-mode) so credits there are relevant.
+
+For more credits, see https://github.com/thomblake/js3-beautify/wiki/Credits
 
 ## Installation ##
 
-js3.el should be placed in your emacs include path. You'll need to byte-compile js3-mode before using it - in emacs, `M-x byte-compile-file RET <path-to-js3.el> RET`.  Or on the command line: `emacs --batch -f batch-byte-compile js3.el` If you want, js3-mode can be configured using `M-x customize-group RET js3-mode RET`.
+js3-beautify.el should be placed in your emacs include path. You'll need to byte-compile js3-beautify before using it - in emacs, `M-x byte-compile-file RET <path-to-js3-beautify.el> RET`.  Or on the command line: `emacs --batch -f batch-byte-compile js3-beautify.el` If you want, js3-mode can be configured using `M-x customize-group RET js3-beautify RET`.
 
-For more details, see https://github.com/thomblake/js3-mode/wiki/Installation
+For more details, see https://github.com/thomblake/js3-beautify/wiki/Installation
 
 ## Notes ##
 
@@ -24,13 +24,7 @@ Right now, all commits are the 'current development build' - so far, nothing tha
 
 If your JS is in error, the indentation might look wrong.  I tend to regard this as a feature.
 
-I use the default settings, plus the following which are turned off by default for historical reasons:
-
-```elisp
- '(js3-auto-indent-p t)         ; it's nice for commas to right themselves.
- '(js3-enter-indents-newline t) ; don't need to push tab before typing
- '(js3-indent-on-enter-key t)   ; fix indenting before moving on
-```
+I use the default settings.
 
 I expect that there are still some bugs; if you see any, **please report them**. Feel free to **file issue reports on github** for things like "it indented like [code block] but I want it to be [code block]".
 
