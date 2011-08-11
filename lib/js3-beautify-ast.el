@@ -385,11 +385,36 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-while-node-body n) v))
 
 (defun js3-beautify-print-while-node (n i)
+  (if ((and (js3-beautify-block-node-p (js3-beautify-while-node-body n))
+	    (> (length (js3-beautify-block-node-kids
+			(js3-beautify-while-node-body n)))
+	       1)))
+      (js3-beautify-print-while-node-long n i)
+    (let ((oldstr js3-beautify-curstr))
+      (js3-beautify-print-while-node-compact n i)
+      (when (and (not (string= js3-beautify-curstr oldstr))
+		 (or (> (length js3-beautify-curln) js3-beautify-max-columns)
+		     (let ((c (compare-strings js3-beautify-curstr 0 nil
+					       oldstr 0 nil))
+			   (diffstr))
+		       (setq diffstr (substring js3-beautify-curstr c))
+		       (string-match "\n\\(.\\|\n\\)" diffstr))))
+	(setq js3-beautify-curstr oldstr)
+	(js3-beautify-concat-curstr "")
+	(js3-beautify-print-while-node-long n i)))))
+
+(defun js3-beautify-print-while-node-long (n i)
   (js3-beautify-concat-curstr "while (")
   (js3-beautify-print-ast (js3-beautify-while-node-condition n) 0)
   (js3-beautify-concat-curstr ") {\n")
   (js3-beautify-print-body (js3-beautify-while-node-body n) (1+ i))
   (js3-beautify-concat-curstr "}\n"))
+
+(defun js3-beautify-print-while-node-compact (n i)
+  (js3-beautify-concat-curstr "while (")
+  (js3-beautify-print-ast (js3-beautify-while-node-condition n) 0)
+  (js3-beautify-concat-curstr ") ")
+  (js3-beautify-print-body (js3-beautify-while-node-body n) (1+ i)))
 
 (defstruct (js3-beautify-for-node
             (:include js3-beautify-loop-node)
@@ -418,6 +443,25 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-for-node-body n) v))
 
 (defun js3-beautify-print-for-node (n i)
+  (if ((and (js3-beautify-block-node-p (js3-beautify-for-node-body n))
+	    (> (length (js3-beautify-block-node-kids
+			(js3-beautify-for-node-body n)))
+	       1)))
+      (js3-beautify-print-for-node-long n i)
+    (let ((oldstr js3-beautify-curstr))
+      (js3-beautify-print-for-node-compact n i)
+      (when (and (not (string= js3-beautify-curstr oldstr))
+		 (or (> (length js3-beautify-curln) js3-beautify-max-columns)
+		     (let ((c (compare-strings js3-beautify-curstr 0 nil
+					       oldstr 0 nil))
+			   (diffstr))
+		       (setq diffstr (substring js3-beautify-curstr c))
+		       (string-match "\n\\(.\\|\n\\)" diffstr))))
+	(setq js3-beautify-curstr oldstr)
+	(js3-beautify-concat-curstr "")
+	(js3-beautify-print-for-node-long n i)))))
+
+(defun js3-beautify-print-for-node-long (n i)
   (js3-beautify-concat-curstr "for (")
   (js3-beautify-print-ast (js3-beautify-for-node-init n) 0)
   (js3-beautify-concat-curstr "; ")
@@ -427,6 +471,16 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-concat-curstr ") {\n")
   (js3-beautify-print-body (js3-beautify-for-node-body n) (1+ i))
   (js3-beautify-concat-curstr "}\n"))
+
+(defun js3-beautify-print-for-node-compact (n i)
+  (js3-beautify-concat-curstr "for (")
+  (js3-beautify-print-ast (js3-beautify-for-node-init n) 0)
+  (js3-beautify-concat-curstr "; ")
+  (js3-beautify-print-ast (js3-beautify-for-node-condition n) 0)
+  (js3-beautify-concat-curstr "; ")
+  (js3-beautify-print-ast (js3-beautify-for-node-update n) 0)
+  (js3-beautify-concat-curstr ") ")
+  (js3-beautify-print-body (js3-beautify-for-node-body n) (1+ i)))
 
 (defstruct (js3-beautify-for-in-node
             (:include js3-beautify-loop-node)
@@ -523,6 +577,26 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-if-node-else-part n) v))
 
 (defun js3-beautify-print-if-node (n i)
+  (if (or (js3-beautify-if-node-else-part n)
+	  (and (js3-beautify-block-node-p (js3-beautify-if-node-then-part n))
+	       (> (length (js3-beautify-block-node-kids
+			   (js3-beautify-if-node-then-part n)))
+		  1)))
+      (js3-beautify-print-if-node-long n i)
+    (let ((oldstr js3-beautify-curstr))
+      (js3-beautify-print-if-node-compact n i)
+      (when (and (not (string= js3-beautify-curstr oldstr))
+		 (or (> (length js3-beautify-curln) js3-beautify-max-columns)
+		     (let ((c (compare-strings js3-beautify-curstr 0 nil
+					       oldstr 0 nil))
+			   (diffstr))
+		       (setq diffstr (substring js3-beautify-curstr c))
+		       (string-match "\n\\(.\\|\n\\)" diffstr))))
+	(setq js3-beautify-curstr oldstr)
+	(js3-beautify-concat-curstr "")
+	(js3-beautify-print-if-node-long n i)))))
+
+(defun js3-beautify-print-if-node-long (n i)
   (js3-beautify-concat-curstr "if ( ")
   (js3-beautify-print-ast (js3-beautify-if-node-condition n) 0)
   (js3-beautify-concat-curstr " ) {\n")
@@ -539,15 +613,22 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
     (js3-beautify-print-body (js3-beautify-if-node-else-part n) (1+ i))
     (js3-beautify-concat-curstr "}\n"))))
 
+(defun js3-beautify-print-if-node-compact (n i)
+  (js3-beautify-concat-curstr "if ( ")
+  (js3-beautify-print-ast (js3-beautify-if-node-condition n) 0)
+  (js3-beautify-concat-curstr " ) ")
+  (js3-beautify-print-body (js3-beautify-if-node-then-part n) (1+ i)))
+
 (defstruct (js3-beautify-try-node
             (:include js3-beautify-node)
             (:constructor nil)
-            (:constructor make-js3-beautify-try-node (&key (type js3-beautify-TRY)
-                                                  (pos js3-beautify-ts-cursor)
-                                                  len
-                                                  try-block
-                                                  catch-clauses
-                                                  finally-block)))
+            (:constructor make-js3-beautify-try-node
+			  (&key (type js3-beautify-TRY)
+				(pos js3-beautify-ts-cursor)
+				len
+				try-block
+				catch-clauses
+				finally-block)))
   "AST node for a try-statement."
   try-block
   catch-clauses  ; a lisp list of `js3-beautify-catch-node'
