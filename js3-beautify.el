@@ -65,15 +65,6 @@ variable with predicate PRED."
   :type 'boolean)
 (js3-bfy-mark-safe-local 'js3-bfy-indent-tabs-mode 'booleanp)
 
-(defcustom js3-bfy-pretty-vars t
-  "Non-nil to try to indent comma-last continued var statements in a pretty way.
-Does not affect comma-first continued var statements.
-
-Note that this forces a reparse so should be turned off if not being used"
-  :group 'js3-bfy
-  :type 'boolean)
-(js3-bfy-mark-safe-local 'js3-bfy-pretty-vars 'booleanp)
-
 (defcustom js3-bfy-cleanup-whitespace t
   "Non-nil to invoke `delete-trailing-whitespace' before saves."
   :type 'boolean
