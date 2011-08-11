@@ -385,10 +385,10 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-while-node-body n) v))
 
 (defun js3-beautify-print-while-node (n i)
-  (if ((and (js3-beautify-block-node-p (js3-beautify-while-node-body n))
-	    (> (length (js3-beautify-block-node-kids
-			(js3-beautify-while-node-body n)))
-	       1)))
+  (if (and (js3-beautify-block-node-p (js3-beautify-while-node-body n))
+	   (> (length (js3-beautify-block-node-kids
+		       (js3-beautify-while-node-body n)))
+	      1))
       (js3-beautify-print-while-node-long n i)
     (let ((oldstr js3-beautify-curstr))
       (js3-beautify-print-while-node-compact n i)
@@ -443,10 +443,10 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-beautify-symbol'."
   (js3-beautify-visit-ast (js3-beautify-for-node-body n) v))
 
 (defun js3-beautify-print-for-node (n i)
-  (if ((and (js3-beautify-block-node-p (js3-beautify-for-node-body n))
-	    (> (length (js3-beautify-block-node-kids
-			(js3-beautify-for-node-body n)))
-	       1)))
+  (if (and (js3-beautify-block-node-p (js3-beautify-for-node-body n))
+	   (> (length (js3-beautify-block-node-kids
+		       (js3-beautify-for-node-body n)))
+	      1))
       (js3-beautify-print-for-node-long n i)
     (let ((oldstr js3-beautify-curstr))
       (js3-beautify-print-for-node-compact n i)

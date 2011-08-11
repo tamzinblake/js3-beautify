@@ -25,9 +25,7 @@ function justHasToWork (cb) {
   doSomething(log.er( cb, "the doSomething failed." ))
 }
 if ( foo ) bar()
-while (foo) {
-  bar()
-}
+while (foo) bar()
 ;( x || y ).doSomething()
 ;[ a, b, c ].forEach(doSomething)
 for (var i = 0; i < 10; i++) {
