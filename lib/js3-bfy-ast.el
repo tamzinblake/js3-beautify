@@ -2300,12 +2300,12 @@ If NODE is the ast-root, returns nil."
         for count from 1
         do
         (if (and (= count 1) (> len 1))
-	    (js3-bfy-concat-curstr " "))
+	    (js3-bfy-concat-curstr ""))
         (js3-bfy-print-ast arg 0)
         (if (< count len)
             (js3-bfy-concat-curstr (or delimiter ", "))
 	  (when (> len 1)
-	    (js3-bfy-concat-curstr " ")))))
+	    (js3-bfy-concat-curstr "")))))
 
 (defun js3-bfy-print-tree (ast)
   "Prints an AST to js3-bfy-curstr.
