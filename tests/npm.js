@@ -15,8 +15,8 @@ var magicWords = ["abracadabra", "gesundheit", "ventrilo"]
 function myThing (args, cb) {
   getData( args
          , function (er, data) {
-           if ( er ) return log.er(cb, "Couldn't get data")(er)
-           doSomethingElse(data, cb)
+           if (er) return log.er(cb, "Couldn't get data")(er)
+           return doSomethingElse(data, cb)
          }
          )
 }
@@ -24,9 +24,9 @@ function myThing (args, cb) {
 function justHasToWork (cb) {
   doSomething(log.er(cb, "the doSomething failed."))
 }
-if ( foo ) bar()
+if (foo) bar()
 while (foo) bar()
-;( x || y ).doSomething()
+;(x || y).doSomething()
 ;[a, b, c].forEach(doSomething)
 for (var i = 0; i < 10; i++) {
   switch (state) {
@@ -36,4 +36,5 @@ for (var i = 0; i < 10; i++) {
   }
   end()
 }
+if ( foo && bar && baz && bip && boop && verylongthingy && somethingelsecrazy && thisshouldbelongenough) foo
 

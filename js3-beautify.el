@@ -3172,9 +3172,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 	(js3-bfy-print-if-node-long n i)))))
 
 (defun js3-bfy-print-if-node-long (n i)
-  (js3-bfy-concat-curstr "if ( ")
-  (js3-bfy-print-ast (js3-bfy-if-node-condition n) 0)
-  (js3-bfy-concat-curstr " ) {\n")
+  (js3-bfy-concat-curstr "if (")
+  (js3-bfy-print-expr (js3-bfy-if-node-condition n) 0)
+  (js3-bfy-concat-curstr ") {\n")
   (js3-bfy-print-body (js3-bfy-if-node-then-part n) (1+ i))
   (js3-bfy-concat-curstr "}\n")
   (cond
@@ -3189,9 +3189,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
     (js3-bfy-concat-curstr "}\n"))))
 
 (defun js3-bfy-print-if-node-compact (n i)
-  (js3-bfy-concat-curstr "if ( ")
-  (js3-bfy-print-ast (js3-bfy-if-node-condition n) 0)
-  (js3-bfy-concat-curstr " ) ")
+  (js3-bfy-concat-curstr "if (")
+  (js3-bfy-print-expr (js3-bfy-if-node-condition n) 0)
+  (js3-bfy-concat-curstr ") ")
   (js3-bfy-print-body (js3-bfy-if-node-then-part n) (1+ i)))
 
 (defstruct (js3-bfy-try-node
@@ -4261,9 +4261,26 @@ as opposed to required parens such as those enclosing an if-conditional."
   (js3-bfy-visit-ast (js3-bfy-paren-node-expr n) v))
 
 (defun js3-bfy-print-paren-node (n i)
-  (js3-bfy-concat-curstr "( ")
-  (js3-bfy-print-ast (js3-bfy-paren-node-expr n) 0)
-  (js3-bfy-concat-curstr " )"))
+  (js3-bfy-concat-curstr "(")
+  (js3-bfy-print-expr (js3-bfy-paren-node-expr n) 0)
+  (js3-bfy-concat-curstr ")"))
+
+(defun js3-bfy-print-expr (n i)
+  (let ((oldstr js3-bfy-curstr))
+    (js3-bfy-print-expr-compact n i)
+    (when (and (not (string= js3-bfy-curstr oldstr))
+	       (or (> (length js3-bfy-curln) js3-bfy-max-columns)
+		   (let ((c (compare-strings js3-bfy-curstr 0 nil
+					     oldstr 0 nil))
+			 (diffstr))
+		     (setq diffstr (substring js3-bfy-curstr c))
+		     (string-match "\n" diffstr))))
+      (setq js3-bfy-curstr oldstr)
+      (js3-bfy-concat-curstr " ")
+      (js3-bfy-print-ast n i))))
+
+(defun js3-bfy-print-expr-compact (n i)
+  (js3-bfy-print-ast n i))
 
 (defstruct (js3-bfy-array-comp-node
             (:include js3-bfy-scope)
