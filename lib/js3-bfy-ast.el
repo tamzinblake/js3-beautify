@@ -205,9 +205,10 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-error-node
             (:include js3-bfy-node)
             (:constructor nil) ; silence emacs21 byte-compiler
-            (:constructor make-js3-bfy-error-node (&key (type js3-bfy-ERROR)
-                                                    (pos js3-bfy-token-beg)
-                                                    len)))
+            (:constructor make-js3-bfy-error-node
+			  (&key (type js3-bfy-ERROR)
+				(pos js3-bfy-token-beg)
+				len)))
   "AST node representing a parse error.")
 
 (put 'cl-struct-js3-bfy-error-node 'js3-bfy-visitor 'js3-bfy-visit-none)
@@ -216,11 +217,12 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-script-node
             (:include js3-bfy-scope)
             (:constructor nil)
-            (:constructor make-js3-bfy-script-node (&key (type js3-bfy-SCRIPT)
-                                                     (pos js3-bfy-token-beg)
-                                                     len
-                                                     var-decls
-                                                     fun-decls)))
+            (:constructor make-js3-bfy-script-node
+			  (&key (type js3-bfy-SCRIPT)
+				(pos js3-bfy-token-beg)
+				len
+				var-decls
+				fun-decls)))
   functions   ; lisp list of nested functions
   regexps     ; lisp list of (string . flags)
   symbols     ; alist (every symbol gets unique index)
@@ -239,10 +241,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-ast-root
             (:include js3-bfy-script-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-ast-root (&key (type js3-bfy-SCRIPT)
-                                                  (pos js3-bfy-token-beg)
-                                                  len
-                                                  buffer)))
+            (:constructor make-js3-bfy-ast-root
+			  (&key (type js3-bfy-SCRIPT)
+				(pos js3-bfy-token-beg)
+				len
+				buffer)))
   "The root node of a js3 AST."
   buffer         ; the source buffer from which the code was parsed
   comments       ; a lisp list of comments, ordered by start position
@@ -262,10 +265,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-comment-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-comment-node (&key (type js3-bfy-COMMENT)
-                                                      (pos js3-bfy-token-beg)
-                                                      len
-                                                      (format js3-bfy-ts-comment-type))))
+            (:constructor make-js3-bfy-comment-node
+			  (&key (type js3-bfy-COMMENT)
+				(pos js3-bfy-token-beg)
+				len
+				(format js3-bfy-ts-comment-type))))
   format)  ; 'line, 'block, 'jsdoc or 'html
 
 (put 'cl-struct-js3-bfy-comment-node 'js3-bfy-visitor 'js3-bfy-visit-none)
@@ -337,14 +341,15 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-do-node
             (:include js3-bfy-loop-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-do-node (&key (type js3-bfy-DO)
-                                                 (pos js3-bfy-token-beg)
-                                                 len
-                                                 body
-                                                 condition
-                                                 while-pos
-                                                 lp
-                                                 rp)))
+            (:constructor make-js3-bfy-do-node
+			  (&key (type js3-bfy-DO)
+				(pos js3-bfy-token-beg)
+				len
+				body
+				condition
+				while-pos
+				lp
+				rp)))
   "AST node for do-loop."
   condition  ; while (expression)
   while-pos) ; buffer position of 'while' keyword
@@ -367,13 +372,14 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-while-node
             (:include js3-bfy-loop-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-while-node (&key (type js3-bfy-WHILE)
-                                                    (pos js3-bfy-token-beg)
-                                                    len
-                                                    body
-                                                    condition
-                                                    lp
-                                                    rp)))
+            (:constructor make-js3-bfy-while-node
+			  (&key (type js3-bfy-WHILE)
+				(pos js3-bfy-token-beg)
+				len
+				body
+				condition
+				lp
+				rp)))
   "AST node for while-loop."
   condition)    ; while-condition
 
@@ -419,15 +425,16 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-for-node
             (:include js3-bfy-loop-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-for-node (&key (type js3-bfy-FOR)
-                                                  (pos js3-bfy-ts-cursor)
-                                                  len
-                                                  body
-                                                  init
-                                                  condition
-                                                  update
-                                                  lp
-                                                  rp)))
+            (:constructor make-js3-bfy-for-node
+			  (&key (type js3-bfy-FOR)
+				(pos js3-bfy-ts-cursor)
+				len
+				body
+				init
+				condition
+				update
+				lp
+				rp)))
   "AST node for a C-style for-loop."
   init       ; initialization expression
   condition  ; loop condition
@@ -551,15 +558,16 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-if-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-if-node (&key (type js3-bfy-IF)
-                                                 (pos js3-bfy-ts-cursor)
-                                                 len
-                                                 condition
-                                                 then-part
-                                                 else-pos
-                                                 else-part
-                                                 lp
-                                                 rp)))
+            (:constructor make-js3-bfy-if-node
+			  (&key (type js3-bfy-IF)
+				(pos js3-bfy-ts-cursor)
+				len
+				condition
+				then-part
+				else-pos
+				else-part
+				lp
+				rp)))
   "AST node for an if-statement."
   condition   ; expression
   then-part   ; statement or block
@@ -804,13 +812,14 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-with-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-with-node (&key (type js3-bfy-WITH)
-                                                   (pos js3-bfy-ts-cursor)
-                                                   len
-                                                   object
-                                                   body
-                                                   lp
-                                                   rp)))
+            (:constructor make-js3-bfy-with-node
+			  (&key (type js3-bfy-WITH)
+				(pos js3-bfy-ts-cursor)
+				len
+				object
+				body
+				lp
+				rp)))
   "AST node for a with-statement."
   object
   body
@@ -834,10 +843,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-label-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-label-node (&key (type js3-bfy-LABEL)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    name)))
+            (:constructor make-js3-bfy-label-node
+			  (&key (type js3-bfy-LABEL)
+				(pos js3-bfy-ts-cursor)
+				len
+				name)))
   "AST node for a statement label or case label."
   name   ; a string
   loop)  ; for validating and code-generating continue-to-label
@@ -853,11 +863,12 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
             (:constructor nil)
             ;; type needs to be in `js3-bfy-side-effecting-tokens' to avoid spurious
             ;; no-side-effects warnings, hence js3-bfy-EXPR_RESULT.
-            (:constructor make-js3-bfy-labeled-stmt-node (&key (type js3-bfy-EXPR_RESULT)
-                                                           (pos js3-bfy-ts-cursor)
-                                                           len
-                                                           labels
-                                                           stmt)))
+            (:constructor make-js3-bfy-labeled-stmt-node
+			  (&key (type js3-bfy-EXPR_RESULT)
+				(pos js3-bfy-ts-cursor)
+				len
+				labels
+				stmt)))
   "AST node for a statement with one or more labels.
 Multiple labels for a statement are collapsed into the labels field."
   labels  ; lisp list of `js3-bfy-label-node'
@@ -913,11 +924,12 @@ NODE is a `js3-bfy-labels-node'.  LABEL is an identifier."
 (defstruct (js3-bfy-break-node
             (:include js3-bfy-jump-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-break-node (&key (type js3-bfy-BREAK)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    label
-                                                    target)))
+            (:constructor make-js3-bfy-break-node
+			  (&key (type js3-bfy-BREAK)
+				(pos js3-bfy-ts-cursor)
+				len
+				label
+				target)))
   "AST node for a break statement.
 The label field is a `js3-bfy-name-node', possibly nil, for the named label
 if provided.  E.g. in 'break foo', it represents 'foo'.  The target field
@@ -1136,12 +1148,13 @@ The type field will be js3-bfy-CONST for a const decl."
 (defstruct (js3-bfy-infix-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-infix-node (&key type
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    op-pos
-                                                    left
-                                                    right)))
+            (:constructor make-js3-bfy-infix-node
+			  (&key type
+				(pos js3-bfy-ts-cursor)
+				len
+				op-pos
+				left
+				right)))
   "Represents infix expressions.
 Includes assignment ops like `|=', and the comma operator.
 The type field inherited from `js3-bfy-node' holds the operator."
@@ -1223,12 +1236,13 @@ The type field inherited from `js3-bfy-node' holds the operator."
 (defstruct (js3-bfy-assign-node
             (:include js3-bfy-infix-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-assign-node (&key type
-                                                     (pos js3-bfy-ts-cursor)
-                                                     len
-                                                     op-pos
-                                                     left
-                                                     right)))
+            (:constructor make-js3-bfy-assign-node
+			  (&key type
+				(pos js3-bfy-ts-cursor)
+				len
+				op-pos
+				left
+				right)))
   "Represents any assignment.
 The type field holds the actual assignment operator.")
 
@@ -1238,10 +1252,11 @@ The type field holds the actual assignment operator.")
 (defstruct (js3-bfy-unary-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-unary-node (&key type ; required
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    operand)))
+            (:constructor make-js3-bfy-unary-node
+			  (&key type ; required
+				(pos js3-bfy-ts-cursor)
+				len
+				operand)))
   "AST node type for unary operator nodes.
 The type field can be NOT, BITNOT, POS, NEG, INC, DEC,
 TYPEOF, or DELPROP.  For INC or DEC, a 'postfix node
@@ -1272,13 +1287,14 @@ property is added if the operator follows the operand."
 (defstruct (js3-bfy-let-node
             (:include js3-bfy-scope)
             (:constructor nil)
-            (:constructor make-js3-bfy-let-node (&key (type js3-bfy-LETEXPR)
-                                                  (pos js3-bfy-token-beg)
-                                                  len
-                                                  vars
-                                                  body
-                                                  lp
-                                                  rp)))
+            (:constructor make-js3-bfy-let-node
+			  (&key (type js3-bfy-LETEXPR)
+				(pos js3-bfy-token-beg)
+				len
+				vars
+				body
+				lp
+				rp)))
   "AST node for a let expression or a let statement.
 Note that a let declaration such as let x=6, y=7 is a `js3-bfy-var-decl-node'."
   vars   ; a `js3-bfy-var-decl-node'
@@ -1302,9 +1318,10 @@ Note that a let declaration such as let x=6, y=7 is a `js3-bfy-var-decl-node'."
 (defstruct (js3-bfy-keyword-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-keyword-node (&key type
-                                                      (pos js3-bfy-token-beg)
-                                                      (len (- js3-bfy-ts-cursor pos)))))
+            (:constructor make-js3-bfy-keyword-node
+			  (&key type
+				(pos js3-bfy-token-beg)
+				(len (- js3-bfy-ts-cursor pos)))))
   "AST node representing a literal keyword such as `null'.
 Used for `null', `this', `true', `false' and `debugger'.
 The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
@@ -1330,14 +1347,15 @@ The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
 (defstruct (js3-bfy-new-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-new-node (&key (type js3-bfy-NEW)
-                                                  (pos js3-bfy-token-beg)
-                                                  len
-                                                  target
-                                                  args
-                                                  initializer
-                                                  lp
-                                                  rp)))
+            (:constructor make-js3-bfy-new-node
+			  (&key (type js3-bfy-NEW)
+				(pos js3-bfy-token-beg)
+				len
+				target
+				args
+				initializer
+				lp
+				rp)))
   "AST node for new-expression such as new Foo()."
   target  ; an identifier or reference
   args    ; a lisp list of argument nodes
@@ -1506,12 +1524,13 @@ You can tell the quote type by looking at the first character."
 (defstruct (js3-bfy-object-prop-node
             (:include js3-bfy-infix-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-object-prop-node (&key (type js3-bfy-COLON)
-                                                          (pos js3-bfy-ts-cursor)
-                                                          len
-                                                          left
-                                                          right
-                                                          op-pos)))
+            (:constructor make-js3-bfy-object-prop-node
+			  (&key (type js3-bfy-COLON)
+				(pos js3-bfy-ts-cursor)
+				len
+				left
+				right
+				op-pos)))
   "AST node for an object literal prop:value entry.
 The `left' field is the property:  a name node, string node or number node.
 The `right' field is a `js3-bfy-node' representing the initializer value.")
@@ -1527,11 +1546,12 @@ The `right' field is a `js3-bfy-node' representing the initializer value.")
 (defstruct (js3-bfy-getter-setter-node
             (:include js3-bfy-infix-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-getter-setter-node (&key type ; GET or SET
-                                                            (pos js3-bfy-ts-cursor)
-                                                            len
-                                                            left
-                                                            right)))
+            (:constructor make-js3-bfy-getter-setter-node
+			  (&key type ; GET or SET
+				(pos js3-bfy-ts-cursor)
+				len
+				left
+				right)))
   "AST node for a getter/setter property in an object literal.
 The `left' field is the `js3-bfy-name-node' naming the getter/setter prop.
 The `right' field is always an anonymous `js3-bfy-function-node' with a node
@@ -1571,13 +1591,14 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 (defstruct (js3-bfy-elem-get-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-elem-get-node (&key (type js3-bfy-GETELEM)
-                                                       (pos js3-bfy-ts-cursor)
-                                                       len
-                                                       target
-                                                       element
-                                                       lb
-                                                       rb)))
+            (:constructor make-js3-bfy-elem-get-node
+			  (&key (type js3-bfy-GETELEM)
+				(pos js3-bfy-ts-cursor)
+				len
+				target
+				element
+				lb
+				rb)))
   "AST node for an array index expression such as foo[bar]."
   target  ; a `js3-bfy-node' - the expression preceding the "."
   element ; a `js3-bfy-node' - the expression in brackets
@@ -1633,10 +1654,11 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 (defstruct (js3-bfy-yield-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-yield-node (&key (type js3-bfy-YIELD)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    value)))
+            (:constructor make-js3-bfy-yield-node
+			  (&key (type js3-bfy-YIELD)
+				(pos js3-bfy-ts-cursor)
+				len
+				value)))
   "AST node for yield statement or expression."
   value) ; optional:  value to be yielded
 
@@ -1655,10 +1677,11 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 (defstruct (js3-bfy-paren-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-paren-node (&key (type js3-bfy-LP)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    expr)))
+            (:constructor make-js3-bfy-paren-node
+			  (&key (type js3-bfy-LP)
+				(pos js3-bfy-ts-cursor)
+				len
+				expr)))
   "AST node for a parenthesized expression.
 In particular, used when the parens are syntactically optional,
 as opposed to required parens such as those enclosing an if-conditional."
@@ -1749,9 +1772,10 @@ as opposed to required parens such as those enclosing an if-conditional."
 (defstruct (js3-bfy-empty-expr-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-empty-expr-node (&key (type js3-bfy-EMPTY)
-                                                         (pos js3-bfy-token-beg)
-                                                         len)))
+            (:constructor make-js3-bfy-empty-expr-node
+			  (&key (type js3-bfy-EMPTY)
+				(pos js3-bfy-token-beg)
+				len)))
   "AST node for an empty expression.")
 
 (put 'cl-struct-js3-bfy-empty-expr-node 'js3-bfy-visitor 'js3-bfy-visit-none)
