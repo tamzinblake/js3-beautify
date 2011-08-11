@@ -551,8 +551,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defun js3-bfy-print-return-node (n i)
   (js3-bfy-concat-curstr "return ")
   (if (js3-bfy-return-node-retval n)
-      (js3-bfy-print-ast (js3-bfy-return-node-retval n) 0)
-    (js3-bfy-concat-curstr ";"))
+      (js3-bfy-print-ast (js3-bfy-return-node-retval n) 0))
   (js3-bfy-concat-curstr "\n"))
 
 (defstruct (js3-bfy-if-node
