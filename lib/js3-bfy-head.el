@@ -1,7 +1,7 @@
 ;;; js3-beautify.el -- a JavaScript beautifier based on js3-mode
 ;;;
 
-;;; js3-beautify-head.el
+;;; js3-bfy-head.el
 
 ;; Author:  Thom Blake (webmaster@thomblake.com)
 ;;   See js3-mode for additional credits
@@ -28,4 +28,4 @@
 
 ;;; Code:
 
-;;; js3-beautify-head.el ends here
+;;; js3-bfy-head.el ends here
