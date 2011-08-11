@@ -2881,14 +2881,8 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 			  (= js3-bfy-LP
 			     (js3-bfy-node-type left)))
 		      (js3-bfy-concat-curstr ";"))))))
-      (if (or (= type js3-bfy-NOT)
-	      (= type js3-bfy-BITNOT)
-	      (= type js3-bfy-POS)
-	      (= type js3-bfy-NEG)
-	      (= type js3-bfy-INC)
-	      (= type js3-bfy-DEC)
-	      (= type js3-bfy-TYPEOF)
-	      (= type js3-bfy-DELPROP))
+      (if (or (= type js3-bfy-POS)
+	      (= type js3-bfy-NEG))
 	  (js3-bfy-concat-curstr ";"))))
   (js3-bfy-print-ast (js3-bfy-expr-stmt-node-expr n) indent)
   (when (/= js3-bfy-CASE
@@ -3794,7 +3788,6 @@ The type field inherited from `js3-bfy-node' holds the operator."
     (let ((oldstr js3-bfy-curstr))
       (js3-bfy-print-infix-node-compact args delimiter)
       (when (and (not (string= js3-bfy-curstr oldstr))
-		 (message (number-to-string (length js3-bfy-curln)))
 		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
 		     (let ((c (compare-strings js3-bfy-curstr 0 nil
 					       oldstr 0 nil))
@@ -3930,11 +3923,11 @@ The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
   (js3-bfy-concat-curstr
    (let ((tt (js3-bfy-node-type n)))
      (cond
-      ((= tt 'js3-bfy-THIS) "this")
-      ((= tt 'js3-bfy-NULL) "null")
-      ((= tt 'js3-bfy-TRUE) "true")
-      ((= tt 'js3-bfy-FALSE) "false")
-      ((= tt 'js3-bfy-DEBUGGER) "debugger")
+      ((= tt js3-bfy-THIS) "this")
+      ((= tt js3-bfy-NULL) "null")
+      ((= tt js3-bfy-TRUE) "true")
+      ((= tt js3-bfy-FALSE) "false")
+      ((= tt js3-bfy-DEBUGGER) "debugger")
       (t (error "Invalid keyword literal type: %d" tt))))))
 
 (defsubst js3-bfy-this-node-p (node)
