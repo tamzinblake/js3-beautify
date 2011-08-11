@@ -714,35 +714,6 @@ The value must be no less than minus `js3-bfy-indent-level'."
   :type 'function
   :group 'js3-bfy)
 
-(defcustom js3-bfy-reparse-on-indent t
-  "Whether `js3-bfy' should perform a reparse before indenting.
-Might be slow, but important for comma-first and operator-first style,
-as well as pretty var statements."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-commas 'booleanp)
-
-(defcustom js3-bfy-lazy-commas nil
-  "Whether `js3-bfy' should line up commas to the indent-minus-2,
-rather than trying to line up to braces."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-commas 'booleanp)
-
-(defcustom js3-bfy-lazy-operators nil
-  "Whether `js3-bfy' should line up operators to the indent-minus-2,
-rather than trying to line up to braces."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-operators 'booleanp)
-
-(defcustom js3-bfy-lazy-dots nil
-  "Whether `js3-bfy' should line up dots to the next indent level,
-rather than trying to line up to dots."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-dots 'booleanp)
-
 (defconst js3-bfy-identifier-re "[a-zA-Z_$][a-zA-Z0-9_$]*")
 
 (defvar js3-bfy-//-comment-re "^\\(\\s-*\\)//.+"

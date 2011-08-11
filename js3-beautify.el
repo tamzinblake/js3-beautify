@@ -745,35 +745,6 @@ The value must be no less than minus `js3-bfy-indent-level'."
   :type 'function
   :group 'js3-bfy)
 
-(defcustom js3-bfy-reparse-on-indent t
-  "Whether `js3-bfy' should perform a reparse before indenting.
-Might be slow, but important for comma-first and operator-first style,
-as well as pretty var statements."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-commas 'booleanp)
-
-(defcustom js3-bfy-lazy-commas nil
-  "Whether `js3-bfy' should line up commas to the indent-minus-2,
-rather than trying to line up to braces."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-commas 'booleanp)
-
-(defcustom js3-bfy-lazy-operators nil
-  "Whether `js3-bfy' should line up operators to the indent-minus-2,
-rather than trying to line up to braces."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-operators 'booleanp)
-
-(defcustom js3-bfy-lazy-dots nil
-  "Whether `js3-bfy' should line up dots to the next indent level,
-rather than trying to line up to dots."
-  :type 'boolean
-  :group 'js3-bfy)
-(js3-bfy-mark-safe-local 'js3-bfy-lazy-dots 'booleanp)
-
 (defconst js3-bfy-identifier-re "[a-zA-Z_$][a-zA-Z0-9_$]*")
 
 (defvar js3-bfy-//-comment-re "^\\(\\s-*\\)//.+"
@@ -7622,12 +7593,6 @@ followed by an opening brace.")
   "Regular expression matching operators that affect indentation
 of continued expressions.")
 
-(defconst js3-bfy-indent-lazy-operator-re
-  (concat "[-+*/%<>=&^|?:]\\([^-+*/]\\|$\\)\\|"
-          (regexp-opt '("in" "instanceof") 'words))
-  "Regular expression matching operators that affect indentation
-of continued expressions in lazy-operator-first style.")
-
 (defconst js3-bfy-indent-operator-first-re
   (concat "[-+*/%<>!=&^|?:.]\\([^-+*/]\\|$\\)\\|"
           (regexp-opt '("in" "instanceof") 'words))
@@ -7979,12 +7944,8 @@ nil."
 
      ;;comma-first and operator-first
      ((or
-       (and (not js3-bfy-lazy-commas)
-	    (= (following-char) ?\,))
-       (and (not js3-bfy-lazy-operators)
-	    (looking-at js3-bfy-indent-operator-first-re)
-	    (or (not (= (following-char) ?\.))
-		(not js3-bfy-lazy-dots))))
+       (= (following-char) ?\,)
+       (looking-at js3-bfy-indent-operator-first-re))
       (let ((node (js3-bfy-node-at-point))
 	    (char (following-char)))
 	(let ((spos
@@ -8188,73 +8149,6 @@ nil."
 	      spos
 	    (+ js3-bfy-indent-level js3-bfy-expr-indent-offset)))))
 
-     ;;lazy comma-first
-     ((and js3-bfy-lazy-commas
-	   (= (following-char) ?\,))
-      (save-excursion
-	(js3-bfy-backward-sexp)
-	(cond
-
-	 ((js3-bfy-looking-back (concat "^[ \t]*,.*" js3-bfy-skip-newlines-re))
-	  (js3-bfy-re-search-backward (concat "^[ \t]*,.*" js3-bfy-skip-newlines-re)
-				      (point-min) t)
-	  (back-to-indentation)
-	  (current-column))
-
-	 ((looking-back (concat "^[ \t]*[^ \t\n].*" js3-bfy-skip-newlines-re))
-	  (re-search-backward (concat "^[ \t]*[^ \t\n].*" js3-bfy-skip-newlines-re)
-			      (point-min) t)
-	  (back-to-indentation)
-	  (if (< (current-column) 2)
-	      (current-column)
-	    (- (current-column) 2)))
-
-	 (t
-	  (+ js3-bfy-indent-level js3-bfy-expr-indent-offset)))))
-
-     ;;lazy dot-first
-     ((and js3-bfy-lazy-dots
-	   (= (following-char) ?\.))
-      (save-excursion
-	(js3-bfy-backward-sexp)
-	(if (looking-back (concat "^[ \t]*[^ \t\n].*" js3-bfy-skip-newlines-re))
-	    (progn
-	      (re-search-backward (concat "^[ \t]*[^ \t\n].*"
-					  js3-bfy-skip-newlines-re)
-				  (point-min) t)
-	      (back-to-indentation)
-	      (+ (current-column) js3-bfy-indent-level))
-	  (+ js3-bfy-indent-level js3-bfy-expr-indent-offset))))
-
-     ;;lazy operator-first
-     ((and js3-bfy-lazy-operators
-	   (looking-at js3-bfy-indent-lazy-operator-re))
-      (save-excursion
-	(js3-bfy-backward-sexp)
-	(if (looking-back (concat "^[ \t]*[^ \t\n].*" js3-bfy-skip-newlines-re))
-	    (progn
-	      (re-search-backward (concat "^[ \t]*[^ \t\n].*"
-					  js3-bfy-skip-newlines-re)
-				  (point-min) t)
-	      (back-to-indentation)
-	      (if (or (looking-at js3-bfy-indent-lazy-operator-re)
-		      (< (current-column) 2))
-		  (current-column)
-		(- (current-column) 2)))
-	  (+ js3-bfy-indent-level js3-bfy-expr-indent-offset))))
-
-     ;;var special case for non-comma-first continued var statements
-     ((and js3-bfy-pretty-vars
-	   (looking-at "[^]})]")
-	   (not (looking-at "\\<var\\>"))
-           (js3-bfy-node-at-point)
-           (js3-bfy-node-parent (js3-bfy-node-at-point))
-           (js3-bfy-node-type (js3-bfy-node-parent (js3-bfy-node-at-point)))
-           (= js3-bfy-VAR (js3-bfy-node-type (js3-bfy-node-parent (js3-bfy-node-at-point)))))
-      (save-excursion
-        (js3-bfy-re-search-backward "\\<var\\>" (point-min) t)
-        (+ (current-column) 4)))
-
      ;;indent control statement body without braces, if applicable
      ((js3-bfy-ctrl-statement-indentation))
 
@@ -8327,7 +8221,7 @@ nil."
 (defun js3-bfy-indent-line ()
   "Indent the current line as JavaScript."
   (interactive)
-  (when js3-bfy-reparse-on-indent (js3-bfy-reparse))
+  (js3-bfy-reparse)
   (save-restriction
     (widen)
     (let* ((parse-status
