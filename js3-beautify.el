@@ -8318,38 +8318,36 @@ You can disable this by customizing `js3-bfy-cleanup-whitespace'."
   (setq js3-bfy-parse-timer
         (run-with-idle-timer js3-bfy-idle-timer-delay nil #'js3-bfy-reparse)))
 
-(defun js3-bfy-reparse (&optional force)
+(defun js3-bfy-reparse ()
   "Re-parse current buffer after user finishes some data entry.
 If we get any user input while parsing, including cursor motion,
-we discard the parse and reschedule it.  If FORCE is nil, then the
-buffer will only rebuild its `js3-bfy-ast' if the buffer is dirty."
+we discard the parse and reschedule it."
   (let (time
         interrupted-p
         (js3-bfy-compiler-strict-mode js3-bfy-show-strict-warnings))
     (unless js3-bfy-parsing
       (setq js3-bfy-parsing t)
       (unwind-protect
-          (when (or js3-bfy-buffer-dirty-p force)
-            (js3-bfy-with-unmodifying-text-property-changes
-             (setq js3-bfy-buffer-dirty-p nil)
-             (if js3-bfy-verbose-parse-p
-                 (message "parsing..."))
-             (setq time
-                   (js3-bfy-time
-                    (setq interrupted-p
-                          (catch 'interrupted
-                            (setq js3-bfy-ast (js3-bfy-parse))
-			    ;; if parsing is interrupted, comments and regex
-			    ;; literals stay ignored by `parse-partial-sexp'
-                            nil))))
-             (if interrupted-p
-                 (progn
-                   ;; unfinished parse => try again
-                   (setq js3-bfy-buffer-dirty-p t)
-                   (js3-bfy-reset-timer))
-               (if js3-bfy-verbose-parse-p
-                   (message "Parse time: %s" time)))))
-        ;; finally
+	  (js3-bfy-with-unmodifying-text-property-changes
+	   (setq js3-bfy-buffer-dirty-p nil)
+	   (if js3-bfy-verbose-parse-p
+	       (message "parsing..."))
+	   (setq time
+		 (js3-bfy-time
+		  (setq interrupted-p
+			(catch 'interrupted
+			  (setq js3-bfy-ast (js3-bfy-parse))
+			  ;; if parsing is interrupted, comments and regex
+			  ;; literals stay ignored by `parse-partial-sexp'
+			  nil))))
+	   (if interrupted-p
+	       (progn
+		 ;; unfinished parse => try again
+		 (setq js3-bfy-buffer-dirty-p t)
+		 (js3-bfy-reset-timer))
+	     (if js3-bfy-verbose-parse-p
+		 (message "Parse time: %s" time))))
+	;; finally
         (setq js3-bfy-parsing nil)
         (unless interrupted-p
           (setq js3-bfy-parse-timer nil))))))
