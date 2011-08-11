@@ -66,8 +66,8 @@ Signals an error if it's not a recognized token."
 (defsubst js3-bfy-report-scan-error (msg &optional no-throw beg len)
   (setq js3-bfy-token-end js3-bfy-ts-cursor)
   (js3-bfy-report-error msg nil
-                    (or beg js3-bfy-token-beg)
-                    (or len (- js3-bfy-token-end js3-bfy-token-beg)))
+			(or beg js3-bfy-token-beg)
+			(or len (- js3-bfy-token-end js3-bfy-token-beg)))
   (unless no-throw
     (throw 'return js3-bfy-ERROR)))
 
@@ -473,7 +473,7 @@ corresponding number.  Otherwise return -1."
               ;; permissive, so we warn about it.
               (when (and (eq base 8) (>= c ?8))
                 (js3-bfy-report-warning "msg.bad.octal.literal"
-                                    (if (eq c ?8) "8" "9"))
+					(if (eq c ?8) "8" "9"))
                 (setq base 10))
               (js3-bfy-add-to-string c)
               (setq c (js3-bfy-get-char))))
@@ -546,7 +546,7 @@ corresponding number.  Otherwise return -1."
                                    (setq c (js3-bfy-get-char))) ; added at end of loop
                                ;; flag it as an invalid escape
                                (js3-bfy-report-warning "msg.invalid.escape"
-                                                   nil (- js3-bfy-ts-cursor 2) 6))
+						       nil (- js3-bfy-ts-cursor 2) 6))
                            ;; Get 4 hex digits; if the u escape is not
                            ;; followed by 4 hex digits, use 'u' + the
                            ;; literal character sequence that follows.
@@ -810,7 +810,7 @@ corresponding number.  Otherwise return -1."
           (setq continue nil))))
       (if (js3-bfy-alpha-p (js3-bfy-peek-char))
           (js3-bfy-report-scan-error "msg.invalid.re.flag" t
-                                 js3-bfy-ts-cursor 1))
+				     js3-bfy-ts-cursor 1))
       (setq js3-bfy-ts-string (js3-bfy-collect-string js3-bfy-ts-string-buffer)
             js3-bfy-ts-regexp-flags (js3-bfy-collect-string flags)
             js3-bfy-token-end js3-bfy-ts-cursor)

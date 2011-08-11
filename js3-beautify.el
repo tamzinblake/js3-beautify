@@ -1037,7 +1037,7 @@ Returns nil if element is not found in the list."
 (defsubst js3-bfy-add-strict-warning (msg-id &optional msg-arg beg end)
   (if js3-bfy-compiler-strict-mode
       (js3-bfy-report-warning msg-id msg-arg beg
-                          (and beg end (- end beg)))))
+			      (and beg end (- end beg)))))
 
 (put 'js3-bfy-syntax-error 'error-conditions
      '(error syntax-error js3-bfy-syntax-error))
@@ -1192,8 +1192,8 @@ Signals an error if it's not a recognized token."
 (defsubst js3-bfy-report-scan-error (msg &optional no-throw beg len)
   (setq js3-bfy-token-end js3-bfy-ts-cursor)
   (js3-bfy-report-error msg nil
-                    (or beg js3-bfy-token-beg)
-                    (or len (- js3-bfy-token-end js3-bfy-token-beg)))
+			(or beg js3-bfy-token-beg)
+			(or len (- js3-bfy-token-end js3-bfy-token-beg)))
   (unless no-throw
     (throw 'return js3-bfy-ERROR)))
 
@@ -1599,7 +1599,7 @@ corresponding number.  Otherwise return -1."
               ;; permissive, so we warn about it.
               (when (and (eq base 8) (>= c ?8))
                 (js3-bfy-report-warning "msg.bad.octal.literal"
-                                    (if (eq c ?8) "8" "9"))
+					(if (eq c ?8) "8" "9"))
                 (setq base 10))
               (js3-bfy-add-to-string c)
               (setq c (js3-bfy-get-char))))
@@ -1672,7 +1672,7 @@ corresponding number.  Otherwise return -1."
                                    (setq c (js3-bfy-get-char))) ; added at end of loop
                                ;; flag it as an invalid escape
                                (js3-bfy-report-warning "msg.invalid.escape"
-                                                   nil (- js3-bfy-ts-cursor 2) 6))
+						       nil (- js3-bfy-ts-cursor 2) 6))
                            ;; Get 4 hex digits; if the u escape is not
                            ;; followed by 4 hex digits, use 'u' + the
                            ;; literal character sequence that follows.
@@ -1936,7 +1936,7 @@ corresponding number.  Otherwise return -1."
           (setq continue nil))))
       (if (js3-bfy-alpha-p (js3-bfy-peek-char))
           (js3-bfy-report-scan-error "msg.invalid.re.flag" t
-                                 js3-bfy-ts-cursor 1))
+				     js3-bfy-ts-cursor 1))
       (setq js3-bfy-ts-string (js3-bfy-collect-string js3-bfy-ts-string-buffer)
             js3-bfy-ts-regexp-flags (js3-bfy-collect-string flags)
             js3-bfy-token-end js3-bfy-ts-cursor)
@@ -1986,610 +1986,610 @@ the correct number of ARGS must be provided."
       key)))  ; default to showing the key
 
 (js3-bfy-msg "msg.dup.parms"
-         "Duplicate parameter name '%s'.")
+	     "Duplicate parameter name '%s'.")
 
 (js3-bfy-msg "msg.too.big.jump"
-         "Program too complex: jump offset too big.")
+	     "Program too complex: jump offset too big.")
 
 (js3-bfy-msg "msg.too.big.index"
-         "Program too complex: internal index exceeds 64K limit.")
+	     "Program too complex: internal index exceeds 64K limit.")
 
 (js3-bfy-msg "msg.while.compiling.fn"
-         "Encountered code generation error while compiling function '%s': %s")
+	     "Encountered code generation error while compiling function '%s': %s")
 
 (js3-bfy-msg "msg.while.compiling.script"
-         "Encountered code generation error while compiling script: %s")
+	     "Encountered code generation error while compiling script: %s")
 
 ;; Context
 (js3-bfy-msg "msg.ctor.not.found"
-         "Constructor for '%s' not found.")
+	     "Constructor for '%s' not found.")
 
 (js3-bfy-msg "msg.not.ctor"
-         "'%s' is not a constructor.")
+	     "'%s' is not a constructor.")
 
 ;; FunctionObject
 (js3-bfy-msg "msg.varargs.ctor"
-         "Method or constructor '%s' must be static "
-         "with the signature (Context cx, Object[] args, "
-         "Function ctorObj, boolean inNewExpr) "
-         "to define a variable arguments constructor.")
+	     "Method or constructor '%s' must be static "
+	     "with the signature (Context cx, Object[] args, "
+	     "Function ctorObj, boolean inNewExpr) "
+	     "to define a variable arguments constructor.")
 
 (js3-bfy-msg "msg.varargs.fun"
-         "Method '%s' must be static with the signature "
-         "(Context cx, Scriptable thisObj, Object[] args, Function funObj) "
-         "to define a variable arguments function.")
+	     "Method '%s' must be static with the signature "
+	     "(Context cx, Scriptable thisObj, Object[] args, Function funObj) "
+	     "to define a variable arguments function.")
 
 (js3-bfy-msg "msg.incompat.call"
-         "Method '%s' called on incompatible object.")
+	     "Method '%s' called on incompatible object.")
 
 (js3-bfy-msg "msg.bad.parms"
-         "Unsupported parameter type '%s' in method '%s'.")
+	     "Unsupported parameter type '%s' in method '%s'.")
 
 (js3-bfy-msg "msg.bad.method.return"
-         "Unsupported return type '%s' in method '%s'.")
+	     "Unsupported return type '%s' in method '%s'.")
 
 (js3-bfy-msg "msg.bad.ctor.return"
-         "Construction of objects of type '%s' is not supported.")
+	     "Construction of objects of type '%s' is not supported.")
 
 (js3-bfy-msg "msg.no.overload"
-         "Method '%s' occurs multiple times in class '%s'.")
+	     "Method '%s' occurs multiple times in class '%s'.")
 
 (js3-bfy-msg "msg.method.not.found"
-         "Method '%s' not found in '%s'.")
+	     "Method '%s' not found in '%s'.")
 
 ;; IRFactory
 
 (js3-bfy-msg "msg.bad.for.in.lhs"
-         "Invalid left-hand side of for..in loop.")
+	     "Invalid left-hand side of for..in loop.")
 
 (js3-bfy-msg "msg.mult.index"
-         "Only one variable allowed in for..in loop.")
+	     "Only one variable allowed in for..in loop.")
 
 (js3-bfy-msg "msg.bad.for.in.destruct"
-         "Left hand side of for..in loop must be an array of "
-         "length 2 to accept key/value pair.")
+	     "Left hand side of for..in loop must be an array of "
+	     "length 2 to accept key/value pair.")
 
 (js3-bfy-msg "msg.cant.convert"
-         "Can't convert to type '%s'.")
+	     "Can't convert to type '%s'.")
 
 (js3-bfy-msg "msg.bad.assign.left"
-         "Invalid assignment left-hand side.")
+	     "Invalid assignment left-hand side.")
 
 (js3-bfy-msg "msg.bad.decr"
-         "Invalid decerement operand.")
+	     "Invalid decerement operand.")
 
 (js3-bfy-msg "msg.bad.incr"
-         "Invalid increment operand.")
+	     "Invalid increment operand.")
 
 (js3-bfy-msg "msg.bad.yield"
-         "yield must be in a function.")
+	     "yield must be in a function.")
 
 (js3-bfy-msg "msg.yield.parenthesized"
-         "yield expression must be parenthesized.")
+	     "yield expression must be parenthesized.")
 
 ;; NativeGlobal
 (js3-bfy-msg "msg.cant.call.indirect"
-         "Function '%s' must be called directly, and not by way of a "
-         "function of another name.")
+	     "Function '%s' must be called directly, and not by way of a "
+	     "function of another name.")
 
 (js3-bfy-msg "msg.eval.nonstring"
-         "Calling eval() with anything other than a primitive "
-         "string value will simply return the value. "
-         "Is this what you intended?")
+	     "Calling eval() with anything other than a primitive "
+	     "string value will simply return the value. "
+	     "Is this what you intended?")
 
 (js3-bfy-msg "msg.eval.nonstring.strict"
-         "Calling eval() with anything other than a primitive "
-         "string value is not allowed in strict mode.")
+	     "Calling eval() with anything other than a primitive "
+	     "string value is not allowed in strict mode.")
 
 (js3-bfy-msg "msg.bad.destruct.op"
-         "Invalid destructuring assignment operator")
+	     "Invalid destructuring assignment operator")
 
 ;; NativeCall
 (js3-bfy-msg "msg.only.from.new"
-         "'%s' may only be invoked from a `new' expression.")
+	     "'%s' may only be invoked from a `new' expression.")
 
 (js3-bfy-msg "msg.deprec.ctor"
-         "The '%s' constructor is deprecated.")
+	     "The '%s' constructor is deprecated.")
 
 ;; NativeFunction
 (js3-bfy-msg "msg.no.function.ref.found"
-         "no source found to decompile function reference %s")
+	     "no source found to decompile function reference %s")
 
 (js3-bfy-msg "msg.arg.isnt.array"
-         "second argument to Function.prototype.apply must be an array")
+	     "second argument to Function.prototype.apply must be an array")
 
 ;; NativeGlobal
 (js3-bfy-msg "msg.bad.esc.mask"
-         "invalid string escape mask")
+	     "invalid string escape mask")
 
 ;; NativeRegExp
 (js3-bfy-msg "msg.bad.quant"
-         "Invalid quantifier %s")
+	     "Invalid quantifier %s")
 
 (js3-bfy-msg "msg.overlarge.backref"
-         "Overly large back reference %s")
+	     "Overly large back reference %s")
 
 (js3-bfy-msg "msg.overlarge.min"
-         "Overly large minimum %s")
+	     "Overly large minimum %s")
 
 (js3-bfy-msg "msg.overlarge.max"
-         "Overly large maximum %s")
+	     "Overly large maximum %s")
 
 (js3-bfy-msg "msg.zero.quant"
-         "Zero quantifier %s")
+	     "Zero quantifier %s")
 
 (js3-bfy-msg "msg.max.lt.min"
-         "Maximum %s less than minimum")
+	     "Maximum %s less than minimum")
 
 (js3-bfy-msg "msg.unterm.quant"
-         "Unterminated quantifier %s")
+	     "Unterminated quantifier %s")
 
 (js3-bfy-msg "msg.unterm.paren"
-         "Unterminated parenthetical %s")
+	     "Unterminated parenthetical %s")
 
 (js3-bfy-msg "msg.unterm.class"
-         "Unterminated character class %s")
+	     "Unterminated character class %s")
 
 (js3-bfy-msg "msg.bad.range"
-         "Invalid range in character class.")
+	     "Invalid range in character class.")
 
 (js3-bfy-msg "msg.trail.backslash"
-         "Trailing \\ in regular expression.")
+	     "Trailing \\ in regular expression.")
 
 (js3-bfy-msg "msg.re.unmatched.right.paren"
-         "unmatched ) in regular expression.")
+	     "unmatched ) in regular expression.")
 
 (js3-bfy-msg "msg.no.regexp"
-         "Regular expressions are not available.")
+	     "Regular expressions are not available.")
 
 (js3-bfy-msg "msg.bad.backref"
-         "back-reference exceeds number of capturing parentheses.")
+	     "back-reference exceeds number of capturing parentheses.")
 
 (js3-bfy-msg "msg.bad.regexp.compile"
-         "Only one argument may be specified if the first "
-         "argument to RegExp.prototype.compile is a RegExp object.")
+	     "Only one argument may be specified if the first "
+	     "argument to RegExp.prototype.compile is a RegExp object.")
 
 ;; Parser
 (js3-bfy-msg "msg.got.syntax.errors"
-         "Compilation produced %s syntax errors.")
+	     "Compilation produced %s syntax errors.")
 
 (js3-bfy-msg "msg.var.redecl"
-         "TypeError: redeclaration of var %s.")
+	     "TypeError: redeclaration of var %s.")
 
 (js3-bfy-msg "msg.const.redecl"
-         "TypeError: redeclaration of const %s.")
+	     "TypeError: redeclaration of const %s.")
 
 (js3-bfy-msg "msg.let.redecl"
-         "TypeError: redeclaration of variable %s.")
+	     "TypeError: redeclaration of variable %s.")
 
 (js3-bfy-msg "msg.parm.redecl"
-         "TypeError: redeclaration of formal parameter %s.")
+	     "TypeError: redeclaration of formal parameter %s.")
 
 (js3-bfy-msg "msg.fn.redecl"
-         "TypeError: redeclaration of function %s.")
+	     "TypeError: redeclaration of function %s.")
 
 (js3-bfy-msg "msg.let.decl.not.in.block"
-         "SyntaxError: let declaration not directly within block")
+	     "SyntaxError: let declaration not directly within block")
 
 ;; NodeTransformer
 (js3-bfy-msg "msg.dup.label"
-         "duplicated label")
+	     "duplicated label")
 
 (js3-bfy-msg "msg.undef.label"
-         "undefined label")
+	     "undefined label")
 
 (js3-bfy-msg "msg.bad.break"
-         "unlabelled break must be inside loop or switch")
+	     "unlabelled break must be inside loop or switch")
 
 (js3-bfy-msg "msg.continue.outside"
-         "continue must be inside loop")
+	     "continue must be inside loop")
 
 (js3-bfy-msg "msg.continue.nonloop"
-         "continue can only use labels of iteration statements")
+	     "continue can only use labels of iteration statements")
 
 (js3-bfy-msg "msg.bad.throw.eol"
-         "Line terminator is not allowed between the throw "
-         "keyword and throw expression.")
+	     "Line terminator is not allowed between the throw "
+	     "keyword and throw expression.")
 
 (js3-bfy-msg "msg.no.paren.parms"
-         "missing ( before function parameters.")
+	     "missing ( before function parameters.")
 
 (js3-bfy-msg "msg.no.parm"
-         "missing formal parameter")
+	     "missing formal parameter")
 
 (js3-bfy-msg "msg.no.paren.after.parms"
-         "missing ) after formal parameters")
+	     "missing ) after formal parameters")
 
 (js3-bfy-msg "msg.no.brace.body"
-         "missing '{' before function body")
+	     "missing '{' before function body")
 
 (js3-bfy-msg "msg.no.brace.after.body"
-         "missing } after function body")
+	     "missing } after function body")
 
 (js3-bfy-msg "msg.no.paren.cond"
-         "missing ( before condition")
+	     "missing ( before condition")
 
 (js3-bfy-msg "msg.no.paren.after.cond"
-         "missing ) after condition")
+	     "missing ) after condition")
 
 (js3-bfy-msg "msg.no.semi.stmt"
-         "missing ; before statement")
+	     "missing ; before statement")
 
 (js3-bfy-msg "msg.missing.semi"
-         "missing ; after statement")
+	     "missing ; after statement")
 
 (js3-bfy-msg "msg.no.name.after.dot"
-         "missing name after . operator")
+	     "missing name after . operator")
 
 (js3-bfy-msg "msg.no.bracket.index"
-         "missing ] in index expression")
+	     "missing ] in index expression")
 
 (js3-bfy-msg "msg.no.paren.switch"
-         "missing ( before switch expression")
+	     "missing ( before switch expression")
 
 (js3-bfy-msg "msg.no.paren.after.switch"
-         "missing ) after switch expression")
+	     "missing ) after switch expression")
 
 (js3-bfy-msg "msg.no.brace.switch"
-         "missing '{' before switch body")
+	     "missing '{' before switch body")
 
 (js3-bfy-msg "msg.bad.switch"
-         "invalid switch statement")
+	     "invalid switch statement")
 
 (js3-bfy-msg "msg.no.colon.case"
-         "missing : after case expression")
+	     "missing : after case expression")
 
 (js3-bfy-msg "msg.double.switch.default"
-         "double default label in the switch statement")
+	     "double default label in the switch statement")
 
 (js3-bfy-msg "msg.no.while.do"
-         "missing while after do-loop body")
+	     "missing while after do-loop body")
 
 (js3-bfy-msg "msg.no.paren.for"
-         "missing ( after for")
+	     "missing ( after for")
 
 (js3-bfy-msg "msg.no.semi.for"
-         "missing ; after for-loop initializer")
+	     "missing ; after for-loop initializer")
 
 (js3-bfy-msg "msg.no.semi.for.cond"
-         "missing ; after for-loop condition")
+	     "missing ; after for-loop condition")
 
 (js3-bfy-msg "msg.in.after.for.name"
-         "missing in after for")
+	     "missing in after for")
 
 (js3-bfy-msg "msg.no.paren.for.ctrl"
-         "missing ) after for-loop control")
+	     "missing ) after for-loop control")
 
 (js3-bfy-msg "msg.no.paren.with"
-         "missing ( before with-statement object")
+	     "missing ( before with-statement object")
 
 (js3-bfy-msg "msg.no.paren.after.with"
-         "missing ) after with-statement object")
+	     "missing ) after with-statement object")
 
 (js3-bfy-msg "msg.no.paren.after.let"
-         "missing ( after let")
+	     "missing ( after let")
 
 (js3-bfy-msg "msg.no.paren.let"
-         "missing ) after variable list")
+	     "missing ) after variable list")
 
 (js3-bfy-msg "msg.no.curly.let"
-         "missing } after let statement")
+	     "missing } after let statement")
 
 (js3-bfy-msg "msg.bad.return"
-         "invalid return")
+	     "invalid return")
 
 (js3-bfy-msg "msg.no.brace.block"
-         "missing } in compound statement")
+	     "missing } in compound statement")
 
 (js3-bfy-msg "msg.bad.label"
-         "invalid label")
+	     "invalid label")
 
 (js3-bfy-msg "msg.bad.var"
-         "missing variable name")
+	     "missing variable name")
 
 (js3-bfy-msg "msg.bad.var.init"
-         "invalid variable initialization")
+	     "invalid variable initialization")
 
 (js3-bfy-msg "msg.no.colon.cond"
-         "missing : in conditional expression")
+	     "missing : in conditional expression")
 
 (js3-bfy-msg "msg.no.paren.arg"
-         "missing ) after argument list")
+	     "missing ) after argument list")
 
 (js3-bfy-msg "msg.no.bracket.arg"
-         "missing ] after element list")
+	     "missing ] after element list")
 
 (js3-bfy-msg "msg.bad.prop"
-         "invalid property id")
+	     "invalid property id")
 
 (js3-bfy-msg "msg.no.colon.prop"
-         "missing : after property id")
+	     "missing : after property id")
 
 (js3-bfy-msg "msg.no.brace.prop"
-         "missing } after property list")
+	     "missing } after property list")
 
 (js3-bfy-msg "msg.no.paren"
-         "missing ) in parenthetical")
+	     "missing ) in parenthetical")
 
 (js3-bfy-msg "msg.reserved.id"
-         "identifier is a reserved word")
+	     "identifier is a reserved word")
 
 (js3-bfy-msg "msg.no.paren.catch"
-         "missing ( before catch-block condition")
+	     "missing ( before catch-block condition")
 
 (js3-bfy-msg "msg.bad.catchcond"
-         "invalid catch block condition")
+	     "invalid catch block condition")
 
 (js3-bfy-msg "msg.catch.unreachable"
-         "any catch clauses following an unqualified catch are unreachable")
+	     "any catch clauses following an unqualified catch are unreachable")
 
 (js3-bfy-msg "msg.no.brace.try"
-         "missing '{' before try block")
+	     "missing '{' before try block")
 
 (js3-bfy-msg "msg.no.brace.catchblock"
-         "missing '{' before catch-block body")
+	     "missing '{' before catch-block body")
 
 (js3-bfy-msg "msg.try.no.catchfinally"
-         "'try' without 'catch' or 'finally'")
+	     "'try' without 'catch' or 'finally'")
 
 (js3-bfy-msg "msg.no.return.value"
-         "function %s does not always return a value")
+	     "function %s does not always return a value")
 
 (js3-bfy-msg "msg.anon.no.return.value"
-         "anonymous function does not always return a value")
+	     "anonymous function does not always return a value")
 
 (js3-bfy-msg "msg.return.inconsistent"
-         "return statement is inconsistent with previous usage")
+	     "return statement is inconsistent with previous usage")
 
 (js3-bfy-msg "msg.generator.returns"
-         "TypeError: generator function '%s' returns a value")
+	     "TypeError: generator function '%s' returns a value")
 
 (js3-bfy-msg "msg.anon.generator.returns"
-         "TypeError: anonymous generator function returns a value")
+	     "TypeError: anonymous generator function returns a value")
 
 (js3-bfy-msg "msg.syntax"
-         "syntax error")
+	     "syntax error")
 
 (js3-bfy-msg "msg.unexpected.eof"
-         "Unexpected end of file")
+	     "Unexpected end of file")
 
 (js3-bfy-msg "msg.too.deep.parser.recursion"
-         "Too deep recursion while parsing")
+	     "Too deep recursion while parsing")
 
 (js3-bfy-msg "msg.no.side.effects"
-         "Code has no side effects")
+	     "Code has no side effects")
 
 (js3-bfy-msg "msg.extra.trailing.comma"
-         "Trailing comma is not legal in an ECMA-262 object initializer")
+	     "Trailing comma is not legal in an ECMA-262 object initializer")
 
 (js3-bfy-msg "msg.array.trailing.comma"
-         "Trailing comma yields different behavior across browsers")
+	     "Trailing comma yields different behavior across browsers")
 
 (js3-bfy-msg "msg.equal.as.assign"
-         (concat "Test for equality (==) mistyped as assignment (=)?"
-                 " (parenthesize to suppress warning)"))
+	     (concat "Test for equality (==) mistyped as assignment (=)?"
+		     " (parenthesize to suppress warning)"))
 
 (js3-bfy-msg "msg.var.hides.arg"
-         "Variable %s hides argument")
+	     "Variable %s hides argument")
 
 (js3-bfy-msg "msg.destruct.assign.no.init"
-         "Missing = in destructuring declaration")
+	     "Missing = in destructuring declaration")
 
 ;; ScriptRuntime
 (js3-bfy-msg "msg.no.properties"
-         "%s has no properties.")
+	     "%s has no properties.")
 
 (js3-bfy-msg "msg.invalid.iterator"
-         "Invalid iterator value")
+	     "Invalid iterator value")
 
 (js3-bfy-msg "msg.iterator.primitive"
-         "__iterator__ returned a primitive value")
+	     "__iterator__ returned a primitive value")
 
 (js3-bfy-msg "msg.assn.create.strict"
-         "Assignment to undeclared variable %s")
+	     "Assignment to undeclared variable %s")
 
 (js3-bfy-msg "msg.ref.undefined.prop"
-         "Reference to undefined property '%s'")
+	     "Reference to undefined property '%s'")
 
 (js3-bfy-msg "msg.prop.not.found"
-         "Property %s not found.")
+	     "Property %s not found.")
 
 (js3-bfy-msg "msg.invalid.type"
-         "Invalid JavaScript value of type %s")
+	     "Invalid JavaScript value of type %s")
 
 (js3-bfy-msg "msg.primitive.expected"
-         "Primitive type expected (had %s instead)")
+	     "Primitive type expected (had %s instead)")
 
 (js3-bfy-msg "msg.namespace.expected"
-         "Namespace object expected to left of :: (found %s instead)")
+	     "Namespace object expected to left of :: (found %s instead)")
 
 (js3-bfy-msg "msg.null.to.object"
-         "Cannot convert null to an object.")
+	     "Cannot convert null to an object.")
 
 (js3-bfy-msg "msg.undef.to.object"
-         "Cannot convert undefined to an object.")
+	     "Cannot convert undefined to an object.")
 
 (js3-bfy-msg "msg.cyclic.value"
-         "Cyclic %s value not allowed.")
+	     "Cyclic %s value not allowed.")
 
 (js3-bfy-msg "msg.is.not.defined"
-         "'%s' is not defined.")
+	     "'%s' is not defined.")
 
 (js3-bfy-msg "msg.undef.prop.read"
-         "Cannot read property '%s' from %s")
+	     "Cannot read property '%s' from %s")
 
 (js3-bfy-msg "msg.undef.prop.write"
-         "Cannot set property '%s' of %s to '%s'")
+	     "Cannot set property '%s' of %s to '%s'")
 
 (js3-bfy-msg "msg.undef.prop.delete"
-         "Cannot delete property '%s' of %s")
+	     "Cannot delete property '%s' of %s")
 
 (js3-bfy-msg "msg.undef.method.call"
-         "Cannot call method '%s' of %s")
+	     "Cannot call method '%s' of %s")
 
 (js3-bfy-msg "msg.undef.with"
-         "Cannot apply 'with' to %s")
+	     "Cannot apply 'with' to %s")
 
 (js3-bfy-msg "msg.isnt.function"
-         "%s is not a function, it is %s.")
+	     "%s is not a function, it is %s.")
 
 (js3-bfy-msg "msg.isnt.function.in"
-         "Cannot call property %s in object %s. "
-         "It is not a function, it is '%s'.")
+	     "Cannot call property %s in object %s. "
+	     "It is not a function, it is '%s'.")
 
 (js3-bfy-msg "msg.function.not.found"
-         "Cannot find function %s.")
+	     "Cannot find function %s.")
 
 (js3-bfy-msg "msg.function.not.found.in"
-         "Cannot find function %s in object %s.")
+	     "Cannot find function %s in object %s.")
 
 (js3-bfy-msg "msg.no.ref.to.get"
-         "%s is not a reference to read reference value.")
+	     "%s is not a reference to read reference value.")
 
 (js3-bfy-msg "msg.no.ref.to.set"
-         "%s is not a reference to set reference value to %s.")
+	     "%s is not a reference to set reference value to %s.")
 
 (js3-bfy-msg "msg.no.ref.from.function"
-         "Function %s can not be used as the left-hand "
-         "side of assignment or as an operand of ++ or -- operator.")
+	     "Function %s can not be used as the left-hand "
+	     "side of assignment or as an operand of ++ or -- operator.")
 
 (js3-bfy-msg "msg.bad.default.value"
-         "Object's getDefaultValue() method returned an object.")
+	     "Object's getDefaultValue() method returned an object.")
 
 (js3-bfy-msg "msg.instanceof.not.object"
-         "Can't use instanceof on a non-object.")
+	     "Can't use instanceof on a non-object.")
 
 (js3-bfy-msg "msg.instanceof.bad.prototype"
-         "'prototype' property of %s is not an object.")
+	     "'prototype' property of %s is not an object.")
 
 (js3-bfy-msg "msg.bad.radix"
-         "illegal radix %s.")
+	     "illegal radix %s.")
 
 ;; ScriptableObject
 (js3-bfy-msg "msg.default.value"
-         "Cannot find default value for object.")
+	     "Cannot find default value for object.")
 
 (js3-bfy-msg "msg.zero.arg.ctor"
-         "Cannot load class '%s' which has no zero-parameter constructor.")
+	     "Cannot load class '%s' which has no zero-parameter constructor.")
 
 (js3-bfy-msg "msg.ctor.multiple.parms"
-         "Can't define constructor or class %s since more than "
-         "one constructor has multiple parameters.")
+	     "Can't define constructor or class %s since more than "
+	     "one constructor has multiple parameters.")
 
 (js3-bfy-msg "msg.extend.scriptable"
-         "%s must extend ScriptableObject in order to define property %s.")
+	     "%s must extend ScriptableObject in order to define property %s.")
 
 (js3-bfy-msg "msg.bad.getter.parms"
-         "In order to define a property, getter %s must have zero "
-         "parameters or a single ScriptableObject parameter.")
+	     "In order to define a property, getter %s must have zero "
+	     "parameters or a single ScriptableObject parameter.")
 
 (js3-bfy-msg "msg.obj.getter.parms"
-         "Expected static or delegated getter %s to take "
-         "a ScriptableObject parameter.")
+	     "Expected static or delegated getter %s to take "
+	     "a ScriptableObject parameter.")
 
 (js3-bfy-msg "msg.getter.static"
-         "Getter and setter must both be static or neither be static.")
+	     "Getter and setter must both be static or neither be static.")
 
 (js3-bfy-msg "msg.setter.return"
-         "Setter must have void return type: %s")
+	     "Setter must have void return type: %s")
 
 (js3-bfy-msg "msg.setter2.parms"
-         "Two-parameter setter must take a ScriptableObject as "
-         "its first parameter.")
+	     "Two-parameter setter must take a ScriptableObject as "
+	     "its first parameter.")
 
 (js3-bfy-msg "msg.setter1.parms"
-         "Expected single parameter setter for %s")
+	     "Expected single parameter setter for %s")
 
 (js3-bfy-msg "msg.setter2.expected"
-         "Expected static or delegated setter %s to take two parameters.")
+	     "Expected static or delegated setter %s to take two parameters.")
 
 (js3-bfy-msg "msg.setter.parms"
-         "Expected either one or two parameters for setter.")
+	     "Expected either one or two parameters for setter.")
 
 (js3-bfy-msg "msg.setter.bad.type"
-         "Unsupported parameter type '%s' in setter '%s'.")
+	     "Unsupported parameter type '%s' in setter '%s'.")
 
 (js3-bfy-msg "msg.add.sealed"
-         "Cannot add a property to a sealed object: %s.")
+	     "Cannot add a property to a sealed object: %s.")
 
 (js3-bfy-msg "msg.remove.sealed"
-         "Cannot remove a property from a sealed object: %s.")
+	     "Cannot remove a property from a sealed object: %s.")
 
 (js3-bfy-msg "msg.modify.sealed"
-         "Cannot modify a property of a sealed object: %s.")
+	     "Cannot modify a property of a sealed object: %s.")
 
 (js3-bfy-msg "msg.modify.readonly"
-         "Cannot modify readonly property: %s.")
+	     "Cannot modify readonly property: %s.")
 
 ;; TokenStream
 (js3-bfy-msg "msg.missing.exponent"
-         "missing exponent")
+	     "missing exponent")
 
 (js3-bfy-msg "msg.caught.nfe"
-         "number format error")
+	     "number format error")
 
 (js3-bfy-msg "msg.unterminated.string.lit"
-         "unterminated string literal")
+	     "unterminated string literal")
 
 (js3-bfy-msg "msg.unterminated.comment"
-         "unterminated comment")
+	     "unterminated comment")
 
 (js3-bfy-msg "msg.unterminated.re.lit"
-         "unterminated regular expression literal")
+	     "unterminated regular expression literal")
 
 (js3-bfy-msg "msg.invalid.re.flag"
-         "invalid flag after regular expression")
+	     "invalid flag after regular expression")
 
 (js3-bfy-msg "msg.no.re.input.for"
-         "no input for %s")
+	     "no input for %s")
 
 (js3-bfy-msg "msg.illegal.character"
-         "illegal character")
+	     "illegal character")
 
 (js3-bfy-msg "msg.invalid.escape"
-         "invalid Unicode escape sequence")
+	     "invalid Unicode escape sequence")
 
 ;; TokensStream warnings
 (js3-bfy-msg "msg.bad.octal.literal"
-         "illegal octal literal digit %s; "
-         "interpreting it as a decimal digit")
+	     "illegal octal literal digit %s; "
+	     "interpreting it as a decimal digit")
 
 (js3-bfy-msg "msg.reserved.keyword"
-         "illegal usage of future reserved keyword %s; "
-         "interpreting it as ordinary identifier")
+	     "illegal usage of future reserved keyword %s; "
+	     "interpreting it as ordinary identifier")
 
 (js3-bfy-msg "msg.script.is.not.constructor"
-         "Script objects are not constructors.")
+	     "Script objects are not constructors.")
 
 ;; Arrays
 (js3-bfy-msg "msg.arraylength.bad"
-         "Inappropriate array length.")
+	     "Inappropriate array length.")
 
 ;; Arrays
 (js3-bfy-msg "msg.arraylength.too.big"
-         "Array length %s exceeds supported capacity limit.")
+	     "Array length %s exceeds supported capacity limit.")
 
 ;; URI
 (js3-bfy-msg "msg.bad.uri"
-         "Malformed URI sequence.")
+	     "Malformed URI sequence.")
 
 ;; Number
 (js3-bfy-msg "msg.bad.precision"
-         "Precision %s out of range.")
+	     "Precision %s out of range.")
 
 ;; NativeGenerator
 (js3-bfy-msg "msg.send.newborn"
-         "Attempt to send value to newborn generator")
+	     "Attempt to send value to newborn generator")
 
 (js3-bfy-msg "msg.already.exec.gen"
-         "Already executing generator")
+	     "Already executing generator")
 
 (js3-bfy-msg "msg.StopIteration.invalid"
-         "StopIteration may not be changed to an arbitrary object.")
+	     "StopIteration may not be changed to an arbitrary object.")
 
 ;; Interpreter
 (js3-bfy-msg "msg.yield.closing"
-         "Yield from closing generator")
+	     "Yield from closing generator")
 
 (provide 'js3-bfy-messages)
 
@@ -2663,7 +2663,7 @@ Any node in the list may be nil, for convenience."
     (when node
       (setf (js3-bfy-node-abs node) (js3-bfy-node-pos node))
       (setf (js3-bfy-node-pos node) (- (js3-bfy-node-pos node)
-                                   (js3-bfy-node-pos n))))))
+				       (js3-bfy-node-pos n))))))
 
 (defsubst js3-bfy-node-add-children (parent &rest nodes)
   "Set parent node of NODES to PARENT, and return PARENT.
@@ -2740,8 +2740,8 @@ If any given node in NODES is nil, doesn't record that link."
 (defun js3-bfy-scope-set-parent-scope (scope parent)
   (setf (js3-bfy-scope-parent-scope scope) parent
         (js3-bfy-scope-top scope) (if (null parent)
-                                  scope
-                                (js3-bfy-scope-top parent))))
+				      scope
+				    (js3-bfy-scope-top parent))))
 
 (defun js3-bfy-node-get-enclosing-scope (node)
   "Return the innermost `js3-bfy-scope' node surrounding NODE.
@@ -2801,9 +2801,10 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-error-node
             (:include js3-bfy-node)
             (:constructor nil) ; silence emacs21 byte-compiler
-            (:constructor make-js3-bfy-error-node (&key (type js3-bfy-ERROR)
-                                                    (pos js3-bfy-token-beg)
-                                                    len)))
+            (:constructor make-js3-bfy-error-node
+			  (&key (type js3-bfy-ERROR)
+				(pos js3-bfy-token-beg)
+				len)))
   "AST node representing a parse error.")
 
 (put 'cl-struct-js3-bfy-error-node 'js3-bfy-visitor 'js3-bfy-visit-none)
@@ -2812,11 +2813,12 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-script-node
             (:include js3-bfy-scope)
             (:constructor nil)
-            (:constructor make-js3-bfy-script-node (&key (type js3-bfy-SCRIPT)
-                                                     (pos js3-bfy-token-beg)
-                                                     len
-                                                     var-decls
-                                                     fun-decls)))
+            (:constructor make-js3-bfy-script-node
+			  (&key (type js3-bfy-SCRIPT)
+				(pos js3-bfy-token-beg)
+				len
+				var-decls
+				fun-decls)))
   functions   ; lisp list of nested functions
   regexps     ; lisp list of (string . flags)
   symbols     ; alist (every symbol gets unique index)
@@ -2835,10 +2837,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-ast-root
             (:include js3-bfy-script-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-ast-root (&key (type js3-bfy-SCRIPT)
-                                                  (pos js3-bfy-token-beg)
-                                                  len
-                                                  buffer)))
+            (:constructor make-js3-bfy-ast-root
+			  (&key (type js3-bfy-SCRIPT)
+				(pos js3-bfy-token-beg)
+				len
+				buffer)))
   "The root node of a js3 AST."
   buffer         ; the source buffer from which the code was parsed
   comments       ; a lisp list of comments, ordered by start position
@@ -2858,10 +2861,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-comment-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-comment-node (&key (type js3-bfy-COMMENT)
-                                                      (pos js3-bfy-token-beg)
-                                                      len
-                                                      (format js3-bfy-ts-comment-type))))
+            (:constructor make-js3-bfy-comment-node
+			  (&key (type js3-bfy-COMMENT)
+				(pos js3-bfy-token-beg)
+				len
+				(format js3-bfy-ts-comment-type))))
   format)  ; 'line, 'block, 'jsdoc or 'html
 
 (put 'cl-struct-js3-bfy-comment-node 'js3-bfy-visitor 'js3-bfy-visit-none)
@@ -2933,14 +2937,15 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-do-node
             (:include js3-bfy-loop-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-do-node (&key (type js3-bfy-DO)
-                                                 (pos js3-bfy-token-beg)
-                                                 len
-                                                 body
-                                                 condition
-                                                 while-pos
-                                                 lp
-                                                 rp)))
+            (:constructor make-js3-bfy-do-node
+			  (&key (type js3-bfy-DO)
+				(pos js3-bfy-token-beg)
+				len
+				body
+				condition
+				while-pos
+				lp
+				rp)))
   "AST node for do-loop."
   condition  ; while (expression)
   while-pos) ; buffer position of 'while' keyword
@@ -2963,13 +2968,14 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-while-node
             (:include js3-bfy-loop-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-while-node (&key (type js3-bfy-WHILE)
-                                                    (pos js3-bfy-token-beg)
-                                                    len
-                                                    body
-                                                    condition
-                                                    lp
-                                                    rp)))
+            (:constructor make-js3-bfy-while-node
+			  (&key (type js3-bfy-WHILE)
+				(pos js3-bfy-token-beg)
+				len
+				body
+				condition
+				lp
+				rp)))
   "AST node for while-loop."
   condition)    ; while-condition
 
@@ -3015,15 +3021,16 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-for-node
             (:include js3-bfy-loop-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-for-node (&key (type js3-bfy-FOR)
-                                                  (pos js3-bfy-ts-cursor)
-                                                  len
-                                                  body
-                                                  init
-                                                  condition
-                                                  update
-                                                  lp
-                                                  rp)))
+            (:constructor make-js3-bfy-for-node
+			  (&key (type js3-bfy-FOR)
+				(pos js3-bfy-ts-cursor)
+				len
+				body
+				init
+				condition
+				update
+				lp
+				rp)))
   "AST node for a C-style for-loop."
   init       ; initialization expression
   condition  ; loop condition
@@ -3147,15 +3154,16 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-if-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-if-node (&key (type js3-bfy-IF)
-                                                 (pos js3-bfy-ts-cursor)
-                                                 len
-                                                 condition
-                                                 then-part
-                                                 else-pos
-                                                 else-part
-                                                 lp
-                                                 rp)))
+            (:constructor make-js3-bfy-if-node
+			  (&key (type js3-bfy-IF)
+				(pos js3-bfy-ts-cursor)
+				len
+				condition
+				then-part
+				else-pos
+				else-part
+				lp
+				rp)))
   "AST node for an if-statement."
   condition   ; expression
   then-part   ; statement or block
@@ -3400,13 +3408,14 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-with-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-with-node (&key (type js3-bfy-WITH)
-                                                   (pos js3-bfy-ts-cursor)
-                                                   len
-                                                   object
-                                                   body
-                                                   lp
-                                                   rp)))
+            (:constructor make-js3-bfy-with-node
+			  (&key (type js3-bfy-WITH)
+				(pos js3-bfy-ts-cursor)
+				len
+				object
+				body
+				lp
+				rp)))
   "AST node for a with-statement."
   object
   body
@@ -3430,10 +3439,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defstruct (js3-bfy-label-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-label-node (&key (type js3-bfy-LABEL)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    name)))
+            (:constructor make-js3-bfy-label-node
+			  (&key (type js3-bfy-LABEL)
+				(pos js3-bfy-ts-cursor)
+				len
+				name)))
   "AST node for a statement label or case label."
   name   ; a string
   loop)  ; for validating and code-generating continue-to-label
@@ -3449,11 +3459,12 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
             (:constructor nil)
             ;; type needs to be in `js3-bfy-side-effecting-tokens' to avoid spurious
             ;; no-side-effects warnings, hence js3-bfy-EXPR_RESULT.
-            (:constructor make-js3-bfy-labeled-stmt-node (&key (type js3-bfy-EXPR_RESULT)
-                                                           (pos js3-bfy-ts-cursor)
-                                                           len
-                                                           labels
-                                                           stmt)))
+            (:constructor make-js3-bfy-labeled-stmt-node
+			  (&key (type js3-bfy-EXPR_RESULT)
+				(pos js3-bfy-ts-cursor)
+				len
+				labels
+				stmt)))
   "AST node for a statement with one or more labels.
 Multiple labels for a statement are collapsed into the labels field."
   labels  ; lisp list of `js3-bfy-label-node'
@@ -3509,11 +3520,12 @@ NODE is a `js3-bfy-labels-node'.  LABEL is an identifier."
 (defstruct (js3-bfy-break-node
             (:include js3-bfy-jump-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-break-node (&key (type js3-bfy-BREAK)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    label
-                                                    target)))
+            (:constructor make-js3-bfy-break-node
+			  (&key (type js3-bfy-BREAK)
+				(pos js3-bfy-ts-cursor)
+				len
+				label
+				target)))
   "AST node for a break statement.
 The label field is a `js3-bfy-name-node', possibly nil, for the named label
 if provided.  E.g. in 'break foo', it represents 'foo'.  The target field
@@ -3732,12 +3744,13 @@ The type field will be js3-bfy-CONST for a const decl."
 (defstruct (js3-bfy-infix-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-infix-node (&key type
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    op-pos
-                                                    left
-                                                    right)))
+            (:constructor make-js3-bfy-infix-node
+			  (&key type
+				(pos js3-bfy-ts-cursor)
+				len
+				op-pos
+				left
+				right)))
   "Represents infix expressions.
 Includes assignment ops like `|=', and the comma operator.
 The type field inherited from `js3-bfy-node' holds the operator."
@@ -3819,12 +3832,13 @@ The type field inherited from `js3-bfy-node' holds the operator."
 (defstruct (js3-bfy-assign-node
             (:include js3-bfy-infix-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-assign-node (&key type
-                                                     (pos js3-bfy-ts-cursor)
-                                                     len
-                                                     op-pos
-                                                     left
-                                                     right)))
+            (:constructor make-js3-bfy-assign-node
+			  (&key type
+				(pos js3-bfy-ts-cursor)
+				len
+				op-pos
+				left
+				right)))
   "Represents any assignment.
 The type field holds the actual assignment operator.")
 
@@ -3834,10 +3848,11 @@ The type field holds the actual assignment operator.")
 (defstruct (js3-bfy-unary-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-unary-node (&key type ; required
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    operand)))
+            (:constructor make-js3-bfy-unary-node
+			  (&key type ; required
+				(pos js3-bfy-ts-cursor)
+				len
+				operand)))
   "AST node type for unary operator nodes.
 The type field can be NOT, BITNOT, POS, NEG, INC, DEC,
 TYPEOF, or DELPROP.  For INC or DEC, a 'postfix node
@@ -3868,13 +3883,14 @@ property is added if the operator follows the operand."
 (defstruct (js3-bfy-let-node
             (:include js3-bfy-scope)
             (:constructor nil)
-            (:constructor make-js3-bfy-let-node (&key (type js3-bfy-LETEXPR)
-                                                  (pos js3-bfy-token-beg)
-                                                  len
-                                                  vars
-                                                  body
-                                                  lp
-                                                  rp)))
+            (:constructor make-js3-bfy-let-node
+			  (&key (type js3-bfy-LETEXPR)
+				(pos js3-bfy-token-beg)
+				len
+				vars
+				body
+				lp
+				rp)))
   "AST node for a let expression or a let statement.
 Note that a let declaration such as let x=6, y=7 is a `js3-bfy-var-decl-node'."
   vars   ; a `js3-bfy-var-decl-node'
@@ -3898,9 +3914,10 @@ Note that a let declaration such as let x=6, y=7 is a `js3-bfy-var-decl-node'."
 (defstruct (js3-bfy-keyword-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-keyword-node (&key type
-                                                      (pos js3-bfy-token-beg)
-                                                      (len (- js3-bfy-ts-cursor pos)))))
+            (:constructor make-js3-bfy-keyword-node
+			  (&key type
+				(pos js3-bfy-token-beg)
+				(len (- js3-bfy-ts-cursor pos)))))
   "AST node representing a literal keyword such as `null'.
 Used for `null', `this', `true', `false' and `debugger'.
 The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
@@ -3926,14 +3943,15 @@ The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
 (defstruct (js3-bfy-new-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-new-node (&key (type js3-bfy-NEW)
-                                                  (pos js3-bfy-token-beg)
-                                                  len
-                                                  target
-                                                  args
-                                                  initializer
-                                                  lp
-                                                  rp)))
+            (:constructor make-js3-bfy-new-node
+			  (&key (type js3-bfy-NEW)
+				(pos js3-bfy-token-beg)
+				len
+				target
+				args
+				initializer
+				lp
+				rp)))
   "AST node for new-expression such as new Foo()."
   target  ; an identifier or reference
   args    ; a lisp list of argument nodes
@@ -4102,12 +4120,13 @@ You can tell the quote type by looking at the first character."
 (defstruct (js3-bfy-object-prop-node
             (:include js3-bfy-infix-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-object-prop-node (&key (type js3-bfy-COLON)
-                                                          (pos js3-bfy-ts-cursor)
-                                                          len
-                                                          left
-                                                          right
-                                                          op-pos)))
+            (:constructor make-js3-bfy-object-prop-node
+			  (&key (type js3-bfy-COLON)
+				(pos js3-bfy-ts-cursor)
+				len
+				left
+				right
+				op-pos)))
   "AST node for an object literal prop:value entry.
 The `left' field is the property:  a name node, string node or number node.
 The `right' field is a `js3-bfy-node' representing the initializer value.")
@@ -4123,11 +4142,12 @@ The `right' field is a `js3-bfy-node' representing the initializer value.")
 (defstruct (js3-bfy-getter-setter-node
             (:include js3-bfy-infix-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-getter-setter-node (&key type ; GET or SET
-                                                            (pos js3-bfy-ts-cursor)
-                                                            len
-                                                            left
-                                                            right)))
+            (:constructor make-js3-bfy-getter-setter-node
+			  (&key type ; GET or SET
+				(pos js3-bfy-ts-cursor)
+				len
+				left
+				right)))
   "AST node for a getter/setter property in an object literal.
 The `left' field is the `js3-bfy-name-node' naming the getter/setter prop.
 The `right' field is always an anonymous `js3-bfy-function-node' with a node
@@ -4167,13 +4187,14 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 (defstruct (js3-bfy-elem-get-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-elem-get-node (&key (type js3-bfy-GETELEM)
-                                                       (pos js3-bfy-ts-cursor)
-                                                       len
-                                                       target
-                                                       element
-                                                       lb
-                                                       rb)))
+            (:constructor make-js3-bfy-elem-get-node
+			  (&key (type js3-bfy-GETELEM)
+				(pos js3-bfy-ts-cursor)
+				len
+				target
+				element
+				lb
+				rb)))
   "AST node for an array index expression such as foo[bar]."
   target  ; a `js3-bfy-node' - the expression preceding the "."
   element ; a `js3-bfy-node' - the expression in brackets
@@ -4229,10 +4250,11 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 (defstruct (js3-bfy-yield-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-yield-node (&key (type js3-bfy-YIELD)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    value)))
+            (:constructor make-js3-bfy-yield-node
+			  (&key (type js3-bfy-YIELD)
+				(pos js3-bfy-ts-cursor)
+				len
+				value)))
   "AST node for yield statement or expression."
   value) ; optional:  value to be yielded
 
@@ -4251,10 +4273,11 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 (defstruct (js3-bfy-paren-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-paren-node (&key (type js3-bfy-LP)
-                                                    (pos js3-bfy-ts-cursor)
-                                                    len
-                                                    expr)))
+            (:constructor make-js3-bfy-paren-node
+			  (&key (type js3-bfy-LP)
+				(pos js3-bfy-ts-cursor)
+				len
+				expr)))
   "AST node for a parenthesized expression.
 In particular, used when the parens are syntactically optional,
 as opposed to required parens such as those enclosing an if-conditional."
@@ -4345,9 +4368,10 @@ as opposed to required parens such as those enclosing an if-conditional."
 (defstruct (js3-bfy-empty-expr-node
             (:include js3-bfy-node)
             (:constructor nil)
-            (:constructor make-js3-bfy-empty-expr-node (&key (type js3-bfy-EMPTY)
-                                                         (pos js3-bfy-token-beg)
-                                                         len)))
+            (:constructor make-js3-bfy-empty-expr-node
+			  (&key (type js3-bfy-EMPTY)
+				(pos js3-bfy-token-beg)
+				len)))
   "AST node for an empty expression.")
 
 (put 'cl-struct-js3-bfy-empty-expr-node 'js3-bfy-visitor 'js3-bfy-visit-none)
@@ -4801,9 +4825,9 @@ If NODE is the ast-root, returns nil."
   "Return t if NODE is a nested function, or is inside a nested function."
   (unless (js3-bfy-ast-root-p node)
     (js3-bfy-function-node-p (if (js3-bfy-function-node-p node)
-                             (js3-bfy-node-parent-script-or-fn node)
-                           (js3-bfy-node-parent-script-or-fn
-                            (js3-bfy-node-parent-script-or-fn node))))))
+				 (js3-bfy-node-parent-script-or-fn node)
+			       (js3-bfy-node-parent-script-or-fn
+				(js3-bfy-node-parent-script-or-fn node))))))
 
 (defsubst js3-bfy-shift-kids (kids start offset)
   (dolist (kid kids)
@@ -5137,8 +5161,8 @@ Returns t if the function satisfies strict mode requirement."
     (or (js3-bfy-flag-not-set-p n js3-bfy-END_RETURNS_VALUE)
         ;; or it returns a value (or is unreached) at every branch
         (js3-bfy-flag-not-set-p n (logior js3-bfy-END_DROPS_OFF
-                                      js3-bfy-END_RETURNS
-                                      js3-bfy-END_YIELDS)))))
+					  js3-bfy-END_RETURNS
+					  js3-bfy-END_YIELDS)))))
 
 (defun js3-bfy-end-check-if (node)
   "Returns in the then and else blocks must be consistent with each other.
@@ -5149,8 +5173,8 @@ Returns logical OR of END_* flags"
     (if (null th)
         js3-bfy-END_UNREACHED
       (logior (js3-bfy-end-check th) (if el
-                                     (js3-bfy-end-check el)
-                                   js3-bfy-END_DROPS_OFF)))))
+					 (js3-bfy-end-check el)
+				       js3-bfy-END_DROPS_OFF)))))
 
 (defun js3-bfy-end-check-switch (node)
   "Consistency of return statements is checked between the case statements.
@@ -5171,8 +5195,8 @@ Returns logical OR of END_* flags."
     (js3-bfy-clear-flag rv js3-bfy-END_DROPS_OFF)
     ;; examine the default
     (js3-bfy-set-flag rv (if default-case
-                         (js3-bfy-end-check default-case)
-                       js3-bfy-END_DROPS_OFF))
+			     (js3-bfy-end-check default-case)
+			   js3-bfy-END_DROPS_OFF))
     rv))
 
 (defun js3-bfy-end-check-try (node)
@@ -5228,8 +5252,8 @@ Returns logical OR of END_* flags."
 
     ;; look for effect of breaks
     (js3-bfy-set-flag rv (js3-bfy-node-get-prop node
-                                        'CONTROL_BLOCK_PROP
-                                        js3-bfy-END_UNREACHED))
+						'CONTROL_BLOCK_PROP
+						js3-bfy-END_UNREACHED))
     rv))
 
 (defun js3-bfy-end-check-block (node)
@@ -5257,8 +5281,8 @@ particular label.
 Returns logical OR of END_* flags."
   (let ((rv (js3-bfy-end-check (js3-bfy-labeled-stmt-node-stmt node))))
     (logior rv (js3-bfy-node-get-prop node
-                                  'CONTROL_BLOCK_PROP
-                                  js3-bfy-END_UNREACHED))))
+				      'CONTROL_BLOCK_PROP
+				      js3-bfy-END_UNREACHED))))
 
 (defun js3-bfy-end-check-break (node)
   "When a break is encountered annotate the statement being broken
@@ -5266,8 +5290,8 @@ out of by setting its CONTROL_BLOCK_PROP property.
 Returns logical OR of END_* flags."
   (and (js3-bfy-break-node-target node)
        (js3-bfy-node-set-prop (js3-bfy-break-node-target node)
-                          'CONTROL_BLOCK_PROP
-                          js3-bfy-END_DROPS_OFF))
+			      'CONTROL_BLOCK_PROP
+			      js3-bfy-END_DROPS_OFF))
   js3-bfy-END_UNREACHED)
 
 (defun js3-bfy-end-check (node)
@@ -5410,7 +5434,7 @@ is only true until the node is added to its parent; i.e., while parsing."
 
 (defsubst js3-bfy-record-comment ()
   (push (make-js3-bfy-comment-node :len (- js3-bfy-token-end js3-bfy-token-beg)
-                               :format js3-bfy-ts-comment-type)
+				   :format js3-bfy-ts-comment-type)
         js3-bfy-scanned-comments))
 
 ;; This function is called depressingly often, so it should be fast.
@@ -5446,8 +5470,8 @@ The flags, if any, are saved in `js3-bfy-current-flagged-token'."
         (setq tt (js3-bfy-get-token)))  ; call scanner
       (setq js3-bfy-current-token tt
             js3-bfy-current-flagged-token (if saw-eol
-                                          (logior tt js3-bfy-ti-after-eol)
-                                        tt))
+					      (logior tt js3-bfy-ti-after-eol)
+					    tt))
       tt)))  ; return unflagged token
 
 (defsubst js3-bfy-peek-flagged-token ()
@@ -5565,7 +5589,7 @@ Returns t on match, nil if no match."
   (when js3-bfy-labeled-stmt
     (setf (js3-bfy-labeled-stmt-node-stmt js3-bfy-labeled-stmt) loop-node
           (js3-bfy-label-node-loop (car (js3-bfy-labeled-stmt-node-labels
-                                     js3-bfy-labeled-stmt))) loop-node)))
+					 js3-bfy-labeled-stmt))) loop-node)))
 
 (defsubst js3-bfy-exit-loop ()
   (pop js3-bfy-loop-set)
@@ -5649,8 +5673,8 @@ Scanner should be initialized."
           (progn
             (js3-bfy-consume-token)
             (setq n (js3-bfy-parse-function (if js3-bfy-called-by-compile-function
-                                            'FUNCTION_EXPRESSION
-                                          'FUNCTION_STATEMENT))))
+						'FUNCTION_EXPRESSION
+					      'FUNCTION_STATEMENT))))
         ;; not a function - parse a statement
         (setq n (js3-bfy-parse-statement)))
       ;; add function or statement to script
@@ -5675,16 +5699,16 @@ Scanner should be initialized."
   (let ((js3-bfy-nesting-of-function (1+ js3-bfy-nesting-of-function)))
     (if js3-bfy-ts-hit-eof
         (js3-bfy-report-error "msg.no.brace.body" nil
-                          (js3-bfy-node-pos fn-node)
-                          (- js3-bfy-ts-cursor (js3-bfy-node-pos fn-node)))
+			      (js3-bfy-node-pos fn-node)
+			      (- js3-bfy-ts-cursor (js3-bfy-node-pos fn-node)))
       (js3-bfy-node-add-children fn-node
-                             (setf (js3-bfy-function-node-body fn-node)
-                                   (js3-bfy-parse-expr))))))
+				 (setf (js3-bfy-function-node-body fn-node)
+				       (js3-bfy-parse-expr))))))
 
 (defun js3-bfy-parse-function-body (fn-node)
   (js3-bfy-must-match js3-bfy-LC "msg.no.brace.body"
-                  (js3-bfy-node-pos fn-node)
-                  (- js3-bfy-ts-cursor (js3-bfy-node-pos fn-node)))
+		      (js3-bfy-node-pos fn-node)
+		      (- js3-bfy-ts-cursor (js3-bfy-node-pos fn-node)))
   (let ((pos js3-bfy-token-beg)         ; LC position
         (pn (make-js3-bfy-block-node))  ; starts at LC position
         tt
@@ -5695,9 +5719,9 @@ Scanner should be initialized."
                         (= tt js3-bfy-EOF)
                         (= tt js3-bfy-RC)))
           (js3-bfy-block-node-push pn (if (/= tt js3-bfy-FUNCTION)
-                                      (js3-bfy-parse-statement)
-                                    (js3-bfy-consume-token)
-                                    (js3-bfy-parse-function 'FUNCTION_STATEMENT))))
+					  (js3-bfy-parse-statement)
+					(js3-bfy-consume-token)
+					(js3-bfy-parse-function 'FUNCTION_STATEMENT))))
       (decf js3-bfy-nesting-of-function))
     (setq end js3-bfy-token-end)  ; assume no curly and leave at current token
     (if (js3-bfy-must-match js3-bfy-RC "msg.no.brace.after.body" pos)
@@ -5747,7 +5771,7 @@ Last token scanned is the close-curly for the function body."
           (end js3-bfy-token-end))
       (if (plusp (js3-bfy-name-node-length name))
           (js3-bfy-add-strict-warning "msg.no.return.value"
-                                  (js3-bfy-name-node-name name) pos end)
+				      (js3-bfy-name-node-name name) pos end)
         (js3-bfy-add-strict-warning "msg.anon.no.return.value" nil pos end)))))
 
 (defun js3-bfy-parse-function (function-type)
@@ -5794,9 +5818,9 @@ Last token scanned is the close-curly for the function body."
         ;; Function statements define a symbol in the enclosing scope
         (js3-bfy-define-symbol js3-bfy-FUNCTION (js3-bfy-name-node-name name) fn-node))
     (setf fn-node (make-js3-bfy-function-node :pos pos
-                                          :name name
-                                          :form function-type
-                                          :lp (if lp (- lp pos))))
+					      :name name
+					      :form function-type
+					      :lp (if lp (- lp pos))))
     (if (or (js3-bfy-inside-function) (plusp js3-bfy-nesting-of-with))
         ;; 1. Nested functions are not affected by the dynamic scope flag
         ;;    as dynamic scope is already a parent of their scope.
@@ -5825,10 +5849,10 @@ Last token scanned is the close-curly for the function body."
       (if (and name
                (eq synthetic-type 'FUNCTION_EXPRESSION)
                (null (js3-bfy-scope-get-symbol js3-bfy-current-scope
-                                           (js3-bfy-name-node-name name))))
+					       (js3-bfy-name-node-name name))))
           (js3-bfy-define-symbol js3-bfy-FUNCTION
-                             (js3-bfy-name-node-name name)
-                             fn-node)))
+				 (js3-bfy-name-node-name name)
+				 fn-node)))
     (setf (js3-bfy-node-len fn-node) (- js3-bfy-ts-cursor pos)
           (js3-bfy-function-node-member-expr fn-node) member-expr-node) ; may be nil
     ;; Rhino doesn't do this, but we need it for finding undeclared vars.
@@ -5986,9 +6010,9 @@ Return value is a list (EXPR LP RP), with absolute paren positions."
     (if (and js3-bfy-strict-cond-assign-warning
              (js3-bfy-assign-node-p pn))
         (js3-bfy-add-strict-warning "msg.equal.as.assign" nil
-                                (js3-bfy-node-pos pn)
-                                (+ (js3-bfy-node-pos pn)
-                                   (js3-bfy-node-len pn))))
+				    (js3-bfy-node-pos pn)
+				    (+ (js3-bfy-node-pos pn)
+				       (js3-bfy-node-len pn))))
     (list pn lp rp)))
 
 (defun js3-bfy-parse-if ()
@@ -6009,13 +6033,13 @@ Return value is a list (EXPR LP RP), with absolute paren positions."
                          (js3-bfy-parse-statement)))
           end (js3-bfy-node-end (or if-false if-true))
           pn (make-js3-bfy-if-node :pos pos
-                               :len (- end pos)
-                               :condition (car cond)
-                               :then-part if-true
-                               :else-part if-false
-                               :else-pos else-pos
-                               :lp (js3-bfy-relpos (second cond) pos)
-                               :rp (js3-bfy-relpos (third cond) pos)))
+				   :len (- end pos)
+				   :condition (car cond)
+				   :then-part if-true
+				   :else-part if-false
+				   :else-pos else-pos
+				   :lp (js3-bfy-relpos (second cond) pos)
+				   :rp (js3-bfy-relpos (third cond) pos)))
     (js3-bfy-node-add-children pn (car cond) if-true if-false)
     pn))
 
@@ -6038,8 +6062,8 @@ Return value is a list (EXPR LP RP), with absolute paren positions."
         (setq lp js3-bfy-token-beg))
     (setq discriminant (js3-bfy-parse-expr)
           pn (make-js3-bfy-switch-node :discriminant discriminant
-                                   :pos pos
-                                   :lp (js3-bfy-relpos lp pos)))
+				       :pos pos
+				       :lp (js3-bfy-relpos lp pos)))
     (js3-bfy-node-add-children pn discriminant)
     (js3-bfy-enter-switch pn)
     (unwind-protect
@@ -6068,8 +6092,8 @@ Return value is a list (EXPR LP RP), with absolute paren positions."
                 (js3-bfy-report-error "msg.bad.switch")
                 (throw 'break nil)))
               (setq case-node (make-js3-bfy-case-node :pos case-pos
-                                                  :len (- js3-bfy-token-end case-pos)
-                                                  :expr case-expr))
+						      :len (- js3-bfy-token-end case-pos)
+						      :expr case-expr))
               (js3-bfy-node-add-children case-node case-expr)
               (while (and (/= (setq tt (js3-bfy-peek-token)) js3-bfy-RC)
                           (/= tt js3-bfy-CASE)
@@ -6192,10 +6216,10 @@ Parses for, for-in, and for each-in statements."
         (setq rp (- js3-bfy-token-beg for-pos)))
     (if (not is-for-in)
         (setq pn (make-js3-bfy-for-node :init init
-                                    :condition cond
-                                    :update incr
-                                    :lp lp
-                                    :rp rp))
+					:condition cond
+					:update incr
+					:lp lp
+					:rp rp))
       ;; cond could be null if 'in obj' got eaten by the init node.
       (if (js3-bfy-infix-node-p init)
           ;; it was (foo in bar) instead of (var foo in bar)
@@ -6205,12 +6229,12 @@ Parses for, for-in, and for each-in statements."
                  (> (length (js3-bfy-var-decl-node-kids init)) 1))
             (js3-bfy-report-error "msg.mult.index")))
       (setq pn (make-js3-bfy-for-in-node :iterator init
-                                     :object cond
-                                     :in-pos in-pos
-                                     :foreach-p is-for-each
-                                     :each-pos each-pos
-                                     :lp lp
-                                     :rp rp)))
+					 :object cond
+					 :in-pos in-pos
+					 :foreach-p is-for-each
+					 :each-pos each-pos
+					 :lp lp
+					 :rp rp)))
     (unwind-protect
         (progn
           (js3-bfy-enter-loop pn)
@@ -6277,12 +6301,12 @@ Parses for, for-in, and for each-in statements."
         (setq block (js3-bfy-parse-statements)
               try-end (js3-bfy-node-end block)
               catch-node (make-js3-bfy-catch-node :pos catch-pos
-                                              :var-name var-name
-                                              :guard-expr catch-cond
-                                              :guard-kwd guard-kwd
-                                              :block block
-                                              :lp lp
-                                              :rp rp))
+						  :var-name var-name
+						  :guard-expr catch-cond
+						  :guard-kwd guard-kwd
+						  :block block
+						  :lp lp
+						  :rp rp))
 	(js3-bfy-pop-scope)
         (if (js3-bfy-must-match js3-bfy-RC "msg.no.brace.after.body")
             (setq try-end js3-bfy-token-beg))
@@ -6292,21 +6316,21 @@ Parses for, for-in, and for each-in statements."
         (push catch-node catch-blocks)))
      ((/= peek js3-bfy-FINALLY)
       (js3-bfy-must-match js3-bfy-FINALLY "msg.try.no.catchfinally"
-                      (js3-bfy-node-pos try-block)
-                      (- (setq try-end (js3-bfy-node-end try-block))
-                         (js3-bfy-node-pos try-block)))))
+			  (js3-bfy-node-pos try-block)
+			  (- (setq try-end (js3-bfy-node-end try-block))
+			     (js3-bfy-node-pos try-block)))))
     (when (js3-bfy-match-token js3-bfy-FINALLY)
       (setq finally-pos js3-bfy-token-beg
             block (js3-bfy-parse-statement)
             try-end (js3-bfy-node-end block)
             finally-block (make-js3-bfy-finally-node :pos finally-pos
-                                                 :len (- try-end finally-pos)
-                                                 :body block))
+						     :len (- try-end finally-pos)
+						     :body block))
       (js3-bfy-node-add-children finally-block block))
     (setq pn (make-js3-bfy-try-node :pos try-pos
-                                :len (- try-end try-pos)
-                                :try-block try-block
-                                :finally-block finally-block))
+				    :len (- try-end try-pos)
+				    :try-block try-block
+				    :finally-block finally-block))
     (js3-bfy-node-add-children pn try-block finally-block)
     ;; push them onto the try-node, which reverses and corrects their order
     (dolist (cb catch-blocks)
@@ -6326,8 +6350,8 @@ Parses for, for-in, and for each-in statements."
         (js3-bfy-report-error "msg.bad.throw.eol"))
     (setq expr (js3-bfy-parse-expr)
           pn (make-js3-bfy-throw-node :pos pos
-                                  :len (- (js3-bfy-node-end expr) pos)
-                                  :expr expr))
+				      :len (- (js3-bfy-node-end expr) pos)
+				      :expr expr))
     (js3-bfy-node-add-children pn expr)
     pn))
 
@@ -6363,9 +6387,9 @@ does not match an existing label, reports an error and returns nil."
             (js3-bfy-report-error "msg.bad.break" nil pos (length "break")))
         (setq break-target (car js3-bfy-loop-and-switch-set))))
     (setq pn (make-js3-bfy-break-node :pos pos
-                                  :len (- end pos)
-                                  :label break-label
-                                  :target break-target))
+				      :len (- end pos)
+				      :label break-label
+				      :target break-target))
     (js3-bfy-node-add-children pn break-label)  ; but not break-target
     pn))
 
@@ -6388,16 +6412,16 @@ does not match an existing label, reports an error and returns nil."
      ((null labels)  ; no current label to go to
       (if (null js3-bfy-loop-set)  ; no loop to continue to
           (js3-bfy-report-error "msg.continue.outside" nil pos
-                            (length "continue"))
+				(length "continue"))
         (setq target (car js3-bfy-loop-set))))  ; innermost enclosing loop
      (t
       (if (js3-bfy-loop-node-p (js3-bfy-labeled-stmt-node-stmt labels))
           (setq target (js3-bfy-labeled-stmt-node-stmt labels))
         (js3-bfy-report-error "msg.continue.nonloop" nil pos (- end pos)))))
     (setq pn (make-js3-bfy-continue-node :pos pos
-                                     :len (- end pos)
-                                     :label label
-                                     :target target))
+					 :len (- end pos)
+					 :label label
+					 :target target))
     (js3-bfy-node-add-children pn label)  ; but not target - it's not our child
     pn))
 
@@ -6414,11 +6438,11 @@ does not match an existing label, reports an error and returns nil."
     (let ((js3-bfy-nesting-of-with (1+ js3-bfy-nesting-of-with)))
       (setq body (js3-bfy-parse-statement)))
     (setq pn (make-js3-bfy-with-node :pos pos
-                                 :len (- (js3-bfy-node-end body) pos)
-                                 :object obj
-                                 :body body
-                                 :lp (js3-bfy-relpos lp pos)
-                                 :rp (js3-bfy-relpos rp pos)))
+				     :len (- (js3-bfy-node-end body) pos)
+				     :object obj
+				     :body body
+				     :lp (js3-bfy-relpos lp pos)
+				     :rp (js3-bfy-relpos rp pos)))
     (js3-bfy-node-add-children pn obj body)
     pn))
 
@@ -6432,18 +6456,18 @@ Last matched token must be js3-bfy-CONST or js3-bfy-VAR."
     (js3-bfy-consume-token)
     (setq expr (js3-bfy-parse-variables tt js3-bfy-token-beg)
           pn (make-js3-bfy-expr-stmt-node :pos pos
-                                      :len (- (js3-bfy-node-end expr) pos)
-                                      :expr expr))
+					  :len (- (js3-bfy-node-end expr) pos)
+					  :expr expr))
     (js3-bfy-node-add-children pn expr)
     pn))
 
 (defsubst js3-bfy-wrap-with-expr-stmt (pos expr &optional add-child)
   (let ((pn (make-js3-bfy-expr-stmt-node :pos pos
-                                     :len (js3-bfy-node-len expr)
-                                     :type (if (js3-bfy-inside-function)
-                                               js3-bfy-EXPR_VOID
-                                             js3-bfy-EXPR_RESULT)
-                                     :expr expr)))
+					 :len (js3-bfy-node-len expr)
+					 :type (if (js3-bfy-inside-function)
+						   js3-bfy-EXPR_VOID
+						 js3-bfy-EXPR_RESULT)
+					 :expr expr)))
     (if add-child
         (js3-bfy-node-add-children pn expr))
     pn))
@@ -6488,8 +6512,8 @@ but not BEFORE."
         name)
     (unless inside-function
       (js3-bfy-report-error (if (eq tt js3-bfy-RETURN)
-                            "msg.bad.return"
-                          "msg.bad.yield")))
+				"msg.bad.return"
+			      "msg.bad.yield")))
     (js3-bfy-consume-token)
     ;; This is ugly, but we don't want to require a semicolon.
     (unless (memq (js3-bfy-peek-token-or-eol) js3-bfy-parse-return-stmt-enders)
@@ -6498,11 +6522,11 @@ but not BEFORE."
     (cond
      ((eq tt js3-bfy-RETURN)
       (js3-bfy-set-flag js3-bfy-end-flags (if (null e)
-                                      js3-bfy-end-returns
-                                    js3-bfy-end-returns-value))
+					      js3-bfy-end-returns
+					    js3-bfy-end-returns-value))
       (setq ret (make-js3-bfy-return-node :pos pos
-                                      :len (- end pos)
-                                      :retval e))
+					  :len (- end pos)
+					  :retval e))
       (js3-bfy-node-add-children ret e)
       ;; See if we need a strict mode warning.
       ;; TODO:  The analysis done by `js3-bfy-has-consistent-return-usage' is
@@ -6514,15 +6538,15 @@ but not BEFORE."
       ;; all the checking in `js3-bfy-parse-return-or-yield'.
       (if (and js3-bfy-strict-inconsistent-return-warning
                (js3-bfy-now-all-set before js3-bfy-end-flags
-                                (logior js3-bfy-end-returns js3-bfy-end-returns-value)))
+				    (logior js3-bfy-end-returns js3-bfy-end-returns-value)))
           (js3-bfy-add-strict-warning "msg.return.inconsistent" nil pos end)))
      (t
       (unless (js3-bfy-inside-function)
         (js3-bfy-report-error "msg.bad.yield"))
       (js3-bfy-set-flag js3-bfy-end-flags js3-bfy-end-yields)
       (setq ret (make-js3-bfy-yield-node :pos pos
-                                     :len (- end pos)
-                                     :value e))
+					 :len (- end pos)
+					 :value e))
       (js3-bfy-node-add-children ret e)
       (unless expr-context
         (setq e ret
@@ -6532,7 +6556,7 @@ but not BEFORE."
     ;; see if we are mixing yields and value returns.
     (when (and inside-function
                (js3-bfy-now-all-set before js3-bfy-end-flags
-                                (logior js3-bfy-end-yields js3-bfy-end-returns-value)))
+				    (logior js3-bfy-end-yields js3-bfy-end-returns-value)))
       (setq name (js3-bfy-function-name js3-bfy-current-script-or-fn))
       (if (zerop (length name))
           (js3-bfy-report-error "msg.anon.generator.returns" nil pos (- end pos))
@@ -6582,9 +6606,9 @@ Last matched token is js3-bfy-SEMI or js3-bfy-ERROR."
       (if (and js3-bfy-parse-ide-mode
                (setq dup (js3-bfy-get-label-by-name labeled-stmt name)))
           (js3-bfy-report-error "msg.dup.label" nil
-                            (js3-bfy-node-abs-pos dup) (js3-bfy-node-len dup)))
+				(js3-bfy-node-abs-pos dup) (js3-bfy-node-len dup)))
       (js3-bfy-report-error "msg.dup.label" nil
-                        (js3-bfy-node-pos label) (js3-bfy-node-len label)))
+			    (js3-bfy-node-pos label) (js3-bfy-node-len label)))
     (js3-bfy-labeled-stmt-node-add-label bundle label)
     (js3-bfy-node-add-children bundle label)
     ;; Add one reference to the bundle per label in `js3-bfy-label-set'
@@ -6652,7 +6676,7 @@ in the first variable declaration.
 
 Returns the parsed `js3-bfy-var-decl-node' expression node."
   (let* ((result (make-js3-bfy-var-decl-node :decl-type decl-type
-                                         :pos pos))
+					     :pos pos))
          destructuring
          kid-pos
          tt
@@ -6687,8 +6711,8 @@ Returns the parsed `js3-bfy-var-decl-node' expression node."
         (setq init (js3-bfy-parse-assign-expr)
               end (js3-bfy-node-end init)))
       (setq vi (make-js3-bfy-var-init-node :pos kid-pos
-                                       :len (- end kid-pos)
-                                       :type decl-type))
+					   :len (- end kid-pos)
+					   :type decl-type))
       (if destructuring
           (progn
             (if (and (null init) (not js3-bfy-in-for-init))
@@ -6740,8 +6764,8 @@ by `js3-bfy-parse-variables'."
 
 (defsubst js3-bfy-define-new-symbol (decl-type name node &optional scope)
   (js3-bfy-scope-put-symbol (or scope js3-bfy-current-scope)
-                        name
-                        (make-js3-bfy-symbol decl-type name node)))
+			    name
+			    (make-js3-bfy-symbol decl-type name node)))
 
 (defun js3-bfy-define-symbol (decl-type name &optional node ignore-not-in-block)
   "Define a symbol in the current scope.
@@ -6771,7 +6795,7 @@ If NODE is non-nil, it is the AST node associated with the symbol."
                    (js3-bfy-loop-node-p js3-bfy-current-scope)))
           (js3-bfy-report-error "msg.let.decl.not.in.block")
         (js3-bfy-define-new-symbol decl-type name node
-			       js3-bfy-current-script-or-fn)))
+				   js3-bfy-current-script-or-fn)))
      ((or (= decl-type js3-bfy-VAR)
           (= decl-type js3-bfy-CONST)
           (= decl-type js3-bfy-FUNCTION))
@@ -6802,11 +6826,11 @@ If NODE is non-nil, it is the AST node associated with the symbol."
       (setq right (js3-bfy-parse-assign-expr)
             left pn
             pn (make-js3-bfy-infix-node :type js3-bfy-COMMA
-                                    :pos pos
-                                    :len (- js3-bfy-ts-cursor pos)
-                                    :op-pos op-pos
-                                    :left left
-                                    :right right))
+					:pos pos
+					:len (- js3-bfy-ts-cursor pos)
+					:op-pos op-pos
+					:left left
+					:right right))
       (js3-bfy-node-add-children pn left right))
     pn))
 
@@ -6829,11 +6853,11 @@ If NODE is non-nil, it is the AST node associated with the symbol."
               left pn
               right (js3-bfy-parse-assign-expr)
               pn (make-js3-bfy-assign-node :type tt
-                                       :pos pos
-                                       :len (- (js3-bfy-node-end right) pos)
-                                       :op-pos op-pos
-                                       :left left
-                                       :right right))
+					   :pos pos
+					   :len (- (js3-bfy-node-end right) pos)
+					   :op-pos op-pos
+					   :left left
+					   :right right))
         (js3-bfy-node-add-children pn left right))
       pn)))
 
@@ -6853,12 +6877,12 @@ If NODE is non-nil, it is the AST node associated with the symbol."
             if-false (js3-bfy-parse-assign-expr)
             test-expr pn
             pn (make-js3-bfy-cond-node :pos pos
-                                   :len (- (js3-bfy-node-end if-false) pos)
-                                   :test-expr test-expr
-                                   :true-expr if-true
-                                   :false-expr if-false
-                                   :q-pos q-pos
-                                   :c-pos c-pos))
+				       :len (- (js3-bfy-node-end if-false) pos)
+				       :test-expr test-expr
+				       :true-expr if-true
+				       :false-expr if-false
+				       :q-pos q-pos
+				       :c-pos c-pos))
       (js3-bfy-node-add-children pn test-expr if-true if-false))
     pn))
 
@@ -6874,11 +6898,11 @@ or a `js3-bfy-node' struct if it has already been parsed."
                     parser
                   (funcall parser)))
          (pn (make-js3-bfy-infix-node :type type
-                                  :pos pos
-                                  :len (- (js3-bfy-node-end right) pos)
-                                  :op-pos op-pos
-                                  :left left
-                                  :right right)))
+				      :pos pos
+				      :len (- (js3-bfy-node-end right) pos)
+				      :op-pos op-pos
+				      :left left
+				      :right right)))
     (js3-bfy-node-add-children pn left right)
     pn))
 
@@ -6886,40 +6910,40 @@ or a `js3-bfy-node' struct if it has already been parsed."
   (let ((pn (js3-bfy-parse-and-expr)))
     (when (js3-bfy-match-token js3-bfy-OR)
       (setq pn (js3-bfy-make-binary js3-bfy-OR
-                                pn
-                                'js3-bfy-parse-or-expr)))
+				    pn
+				    'js3-bfy-parse-or-expr)))
     pn))
 
 (defun js3-bfy-parse-and-expr ()
   (let ((pn (js3-bfy-parse-bit-or-expr)))
     (when (js3-bfy-match-token js3-bfy-AND)
       (setq pn (js3-bfy-make-binary js3-bfy-AND
-                                pn
-                                'js3-bfy-parse-and-expr)))
+				    pn
+				    'js3-bfy-parse-and-expr)))
     pn))
 
 (defun js3-bfy-parse-bit-or-expr ()
   (let ((pn (js3-bfy-parse-bit-xor-expr)))
     (while (js3-bfy-match-token js3-bfy-BITOR)
       (setq pn (js3-bfy-make-binary js3-bfy-BITOR
-                                pn
-                                'js3-bfy-parse-bit-xor-expr)))
+				    pn
+				    'js3-bfy-parse-bit-xor-expr)))
     pn))
 
 (defun js3-bfy-parse-bit-xor-expr ()
   (let ((pn (js3-bfy-parse-bit-and-expr)))
     (while (js3-bfy-match-token js3-bfy-BITXOR)
       (setq pn (js3-bfy-make-binary js3-bfy-BITXOR
-                                pn
-                                'js3-bfy-parse-bit-and-expr)))
+				    pn
+				    'js3-bfy-parse-bit-and-expr)))
     pn))
 
 (defun js3-bfy-parse-bit-and-expr ()
   (let ((pn (js3-bfy-parse-eq-expr)))
     (while (js3-bfy-match-token js3-bfy-BITAND)
       (setq pn (js3-bfy-make-binary js3-bfy-BITAND
-                                pn
-                                'js3-bfy-parse-eq-expr)))
+				    pn
+				    'js3-bfy-parse-eq-expr)))
     pn))
 
 (defconst js3-bfy-parse-eq-ops
@@ -6931,8 +6955,8 @@ or a `js3-bfy-node' struct if it has already been parsed."
     (while (memq (setq tt (js3-bfy-peek-token)) js3-bfy-parse-eq-ops)
       (js3-bfy-consume-token)
       (setq pn (js3-bfy-make-binary tt
-                                pn
-                                'js3-bfy-parse-rel-expr)))
+				    pn
+				    'js3-bfy-parse-rel-expr)))
     pn))
 
 (defconst js3-bfy-parse-rel-ops
@@ -7015,9 +7039,9 @@ to parse the operand (for prefix operators)."
               end js3-bfy-token-end)
       (setq end (js3-bfy-node-end expr)))
     (setq pn (make-js3-bfy-unary-node :type type
-                                  :pos pos
-                                  :len (- end pos)
-                                  :operand expr))
+				      :pos pos
+				      :len (- end pos)
+				      :operand expr))
     (js3-bfy-node-add-children pn expr)
     pn))
 
@@ -7029,9 +7053,9 @@ to parse the operand (for prefix operators)."
   (unless (memq (js3-bfy-node-type (js3-bfy-unary-node-operand unary))
                 js3-bfy-incrementable-node-types)
     (js3-bfy-report-error (if (= tt js3-bfy-INC)
-                          "msg.bad.incr"
-                        "msg.bad.decr")
-                      nil beg (- end beg))))
+			      "msg.bad.incr"
+			    "msg.bad.decr")
+			  nil beg (- end beg))))
 
 (defun js3-bfy-parse-unary-expr ()
   (let ((tt (js3-bfy-peek-token))
@@ -7111,8 +7135,8 @@ Returns the list in reverse order.  Consumes the right-paren token."
             target (js3-bfy-parse-member-expr)
             end (js3-bfy-node-end target)
             pn (make-js3-bfy-new-node :pos pos
-                                  :target target
-                                  :len (- end pos)))
+				      :target target
+				      :len (- end pos)))
       (js3-bfy-node-add-children pn target)
       (when (js3-bfy-match-token js3-bfy-LP)
         ;; Add the arguments to pn, if any are supplied.
@@ -7168,14 +7192,14 @@ Last token parsed must be `js3-bfy-RB'."
     (if (js3-bfy-must-match js3-bfy-RB "msg.no.bracket.index")
         (setq rb js3-bfy-token-beg))
     (setq pn (make-js3-bfy-elem-get-node :target pn
-                                     :pos pos
-                                     :element expr
-                                     :lb (js3-bfy-relpos lb pos)
-                                     :rb (js3-bfy-relpos rb pos)
-                                     :len (- js3-bfy-token-end pos)))
+					 :pos pos
+					 :element expr
+					 :lb (js3-bfy-relpos lb pos)
+					 :rb (js3-bfy-relpos rb pos)
+					 :len (- js3-bfy-token-end pos)))
     (js3-bfy-node-add-children pn
-                           (js3-bfy-elem-get-node-target pn)
-                           (js3-bfy-elem-get-node-element pn))
+			       (js3-bfy-elem-get-node-target pn)
+			       (js3-bfy-elem-get-node-element pn))
     pn))
 
 (defun js3-bfy-parse-function-call (pn)
@@ -7183,8 +7207,8 @@ Last token parsed must be `js3-bfy-RB'."
         (pos (js3-bfy-node-pos pn)))
     (js3-bfy-consume-token)
     (setq pn (make-js3-bfy-call-node :pos pos
-                                 :target pn
-                                 :lp (- js3-bfy-token-beg pos)))
+				     :target pn
+				     :lp (- js3-bfy-token-beg pos)))
     (js3-bfy-node-add-children pn (js3-bfy-call-node-target pn))
     ;; Add the arguments to pn, if any are supplied.
     (setf args (nreverse (js3-bfy-parse-argument-list))
@@ -7203,10 +7227,10 @@ Last token parsed must be `js3-bfy-RB'."
     (js3-bfy-must-match-prop-name "msg.no.name.after.dot")
     (setq name (js3-bfy-create-name-node t js3-bfy-GETPROP)
 	  result (make-js3-bfy-prop-get-node :left pn
-					 :pos js3-bfy-token-beg
-					 :right name
-					 :len (- js3-bfy-token-end
-						 js3-bfy-token-beg)))
+					     :pos js3-bfy-token-beg
+					     :right name
+					     :len (- js3-bfy-token-end
+						     js3-bfy-token-beg)))
     (js3-bfy-node-add-children result pn name)
     result))
 
@@ -7237,8 +7261,8 @@ array-literals, array comprehensions and regular expressions."
             expr (js3-bfy-parse-expr))
       (js3-bfy-must-match js3-bfy-RP "msg.no.paren")
       (setq pn (make-js3-bfy-paren-node :pos px-pos
-                                    :expr expr
-                                    :len (- js3-bfy-token-end px-pos)))
+					:expr expr
+					:len (- js3-bfy-token-end px-pos)))
       (js3-bfy-node-add-children pn (js3-bfy-paren-node-expr pn))
       pn)
      ((= tt js3-bfy-NAME)
@@ -7255,9 +7279,9 @@ array-literals, array comprehensions and regular expressions."
             js3-bfy-ts-regexp-flags nil)
       (prog1
 	  (make-js3-bfy-regexp-node :pos px-pos
-					 :len (- js3-bfy-ts-cursor px-pos)
-					 :value js3-bfy-ts-string
-					 :flags flags)
+				    :len (- js3-bfy-ts-cursor px-pos)
+				    :value js3-bfy-ts-string
+				    :flags flags)
 	(js3-bfy-record-text-property px-pos js3-bfy-ts-cursor 'syntax-table '(2))))
      ((or (= tt js3-bfy-NULL)
           (= tt js3-bfy-THIS)
@@ -7286,8 +7310,8 @@ array-literals, array comprehensions and regular expressions."
     (if (and (js3-bfy-flag-set-p tt-flagged js3-bfy-ti-check-label)
              (= (js3-bfy-peek-token) js3-bfy-COLON))
 	(make-js3-bfy-label-node :pos name-pos
-			     :len (- js3-bfy-token-end name-pos)
-			     :name name)
+				 :len (- js3-bfy-token-end name-pos)
+				 :name name)
       ;; Otherwise not a label, just a name.  Unfortunately peeking
       ;; the next token to check for a colon has biffed js3-bfy-token-beg
       ;; and js3-bfy-token-end.  We store the name's bounds in buffer vars
@@ -7337,12 +7361,12 @@ array-literals, array comprehensions and regular expressions."
         (setq continue nil
               end js3-bfy-token-end
               pn (make-js3-bfy-array-node :pos pos
-                                      :len (- js3-bfy-ts-cursor pos)
-                                      :elems (nreverse elems)))
+					  :len (- js3-bfy-ts-cursor pos)
+					  :elems (nreverse elems)))
         (apply #'js3-bfy-node-add-children pn (js3-bfy-array-node-elems pn))
         (when after-comma
           (js3-bfy-parse-warn-trailing-comma "msg.array.trailing.comma"
-                                         pos elems after-comma)))
+					     pos elems after-comma)))
        ;; array comp
        ((and (>= js3-bfy-language-version 170)
              (= tt js3-bfy-FOR)          ; check for array comprehension
@@ -7377,13 +7401,13 @@ We should have just parsed the 'for' keyword before calling this function."
             filter (js3-bfy-parse-condition)))
     (js3-bfy-must-match js3-bfy-RB "msg.no.bracket.arg" pos)
     (setq result (make-js3-bfy-array-comp-node :pos pos
-                                           :len (- js3-bfy-ts-cursor pos)
-                                           :result expr
-                                           :loops (nreverse loops)
-                                           :filter (car filter)
-                                           :lp (js3-bfy-relpos (second filter) pos)
-                                           :rp (js3-bfy-relpos (third filter) pos)
-                                           :if-pos if-pos))
+					       :len (- js3-bfy-ts-cursor pos)
+					       :result expr
+					       :loops (nreverse loops)
+					       :filter (car filter)
+					       :lp (js3-bfy-relpos (second filter) pos)
+					       :rp (js3-bfy-relpos (third filter) pos)
+					       :if-pos if-pos))
     (apply #'js3-bfy-node-add-children result expr (car filter)
            (js3-bfy-array-comp-node-loops result))
     result))
@@ -7474,7 +7498,7 @@ Last token peeked should be the initial FOR."
         (setq continue nil)
         (if after-comma
             (js3-bfy-parse-warn-trailing-comma "msg.extra.trailing.comma"
-                                           pos elems after-comma)))
+					       pos elems after-comma)))
        (t
         (js3-bfy-report-error "msg.bad.prop")
         (unless js3-bfy-recover-from-parse-errors
@@ -7484,8 +7508,8 @@ Last token peeked should be the initial FOR."
         (setq continue nil)))           ; end loop
     (js3-bfy-must-match js3-bfy-RC "msg.no.brace.prop")
     (setq result (make-js3-bfy-object-node :pos pos
-                                       :len (- js3-bfy-ts-cursor pos)
-                                       :elems (nreverse elems)))
+					   :len (- js3-bfy-ts-cursor pos)
+					   :elems (nreverse elems)))
     (apply #'js3-bfy-node-add-children result (js3-bfy-object-node-elems result))
     result))
 
@@ -7551,10 +7575,10 @@ GET-P is non-nil if the keyword was `get'."
     (js3-bfy-node-set-prop fn 'GETTER_SETTER type)  ; for codegen
     (setq end (js3-bfy-node-end fn)
           result (make-js3-bfy-getter-setter-node :type type
-                                              :pos pos
-                                              :len (- end pos)
-                                              :left prop
-                                              :right fn))
+						  :pos pos
+						  :len (- end pos)
+						  :left prop
+						  :right fn))
     (js3-bfy-node-add-children result prop fn)
     result))
 
@@ -7572,8 +7596,8 @@ not `js3-bfy-NAME', then we use the token info saved in instance vars."
             js3-bfy-prev-name-token-start nil
             js3-bfy-prev-name-token-string nil))
     (setq name (make-js3-bfy-name-node :pos beg
-                                   :name s
-                                   :len (length s)))
+				       :name s
+				       :len (length s)))
     (if check-activation-p
         (js3-bfy-check-activation-name s (or token js3-bfy-NAME)))
     name))
@@ -7854,7 +7878,7 @@ Skip backwards over whitespace and comments."
     (when (js3-bfy-looking-back "[ \t\n]")
       (setq rv t)
       (js3-bfy-re-search-backward (concat "[^ \t\n]" js3-bfy-skip-newlines-re)
-			      (point-min) t)
+				  (point-min) t)
       (forward-char))
     rv))
 
@@ -7869,8 +7893,8 @@ Functionality does not exactly match backward-sexp."
     (while (js3-bfy-looking-back (concat "[]})]" js3-bfy-skip-newlines-re))
       (setq rv t)
       (js3-bfy-re-search-backward (concat "[]})]"
-				      js3-bfy-skip-newlines-re)
-			      (point-min) t)
+					  js3-bfy-skip-newlines-re)
+				  (point-min) t)
       (cond
        ((= (following-char) ?\])
         (setq brackets (1+ brackets))
@@ -8133,29 +8157,29 @@ nil."
 		   (cond
 		    ((js3-bfy-looking-back (concat "[,([{].*" js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "[,([{].*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (current-column))
 
 		    ((js3-bfy-looking-back (concat "\\<var\\>.*"
-					       js3-bfy-skip-newlines-re))
+						   js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "\\<var\\>.*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (+ (current-column) 2))
 
 		    ((js3-bfy-looking-back (concat "\\<return\\>.*"
-					       js3-bfy-skip-newlines-re))
+						   js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "\\<return\\>.*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (+ (current-column) 5))
 
 		    ((js3-bfy-looking-back (concat "[,([{]\\(.\\|\n\\)*"
-					       js3-bfy-skip-newlines-re))
+						   js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "[,([{]\\(.\\|\n\\)*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (current-column))
 
 		    (t
@@ -8173,7 +8197,7 @@ nil."
 
 	 ((js3-bfy-looking-back (concat "^[ \t]*,.*" js3-bfy-skip-newlines-re))
 	  (js3-bfy-re-search-backward (concat "^[ \t]*,.*" js3-bfy-skip-newlines-re)
-				  (point-min) t)
+				      (point-min) t)
 	  (back-to-indentation)
 	  (current-column))
 
@@ -8254,16 +8278,16 @@ nil."
               (when (eq (char-before) ?\)) (backward-list)) ;skip arg list
 	      (if (and (not js3-bfy-consistent-level-indent-inner-bracket)
 		       (js3-bfy-looking-back (concat
-					  ":"
-					  js3-bfy-skip-newlines-re
-					  "\\<function\\>"
-					  js3-bfy-skip-newlines-re)))
+					      ":"
+					      js3-bfy-skip-newlines-re
+					      "\\<function\\>"
+					      js3-bfy-skip-newlines-re)))
 		  (progn
 		    (js3-bfy-re-search-backward (concat
-					     ":"
-					     js3-bfy-skip-newlines-re
-					     "\\<function\\>"
-					     js3-bfy-skip-newlines-re))
+						 ":"
+						 js3-bfy-skip-newlines-re
+						 "\\<function\\>"
+						 js3-bfy-skip-newlines-re))
 		    (js3-bfy-backward-clean)
 		    (if (looking-back "[{[(,][^{[(,\n]*")
 			(progn

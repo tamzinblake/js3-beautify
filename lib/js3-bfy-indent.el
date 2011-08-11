@@ -271,7 +271,7 @@ Skip backwards over whitespace and comments."
     (when (js3-bfy-looking-back "[ \t\n]")
       (setq rv t)
       (js3-bfy-re-search-backward (concat "[^ \t\n]" js3-bfy-skip-newlines-re)
-			      (point-min) t)
+				  (point-min) t)
       (forward-char))
     rv))
 
@@ -286,8 +286,8 @@ Functionality does not exactly match backward-sexp."
     (while (js3-bfy-looking-back (concat "[]})]" js3-bfy-skip-newlines-re))
       (setq rv t)
       (js3-bfy-re-search-backward (concat "[]})]"
-				      js3-bfy-skip-newlines-re)
-			      (point-min) t)
+					  js3-bfy-skip-newlines-re)
+				  (point-min) t)
       (cond
        ((= (following-char) ?\])
         (setq brackets (1+ brackets))
@@ -550,29 +550,29 @@ nil."
 		   (cond
 		    ((js3-bfy-looking-back (concat "[,([{].*" js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "[,([{].*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (current-column))
 
 		    ((js3-bfy-looking-back (concat "\\<var\\>.*"
-					       js3-bfy-skip-newlines-re))
+						   js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "\\<var\\>.*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (+ (current-column) 2))
 
 		    ((js3-bfy-looking-back (concat "\\<return\\>.*"
-					       js3-bfy-skip-newlines-re))
+						   js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "\\<return\\>.*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (+ (current-column) 5))
 
 		    ((js3-bfy-looking-back (concat "[,([{]\\(.\\|\n\\)*"
-					       js3-bfy-skip-newlines-re))
+						   js3-bfy-skip-newlines-re))
 		     (js3-bfy-re-search-backward (concat "[,([{]\\(.\\|\n\\)*"
-						     js3-bfy-skip-newlines-re)
-					     (point-min) t)
+							 js3-bfy-skip-newlines-re)
+						 (point-min) t)
 		     (current-column))
 
 		    (t
@@ -590,7 +590,7 @@ nil."
 
 	 ((js3-bfy-looking-back (concat "^[ \t]*,.*" js3-bfy-skip-newlines-re))
 	  (js3-bfy-re-search-backward (concat "^[ \t]*,.*" js3-bfy-skip-newlines-re)
-				  (point-min) t)
+				      (point-min) t)
 	  (back-to-indentation)
 	  (current-column))
 
@@ -671,16 +671,16 @@ nil."
               (when (eq (char-before) ?\)) (backward-list)) ;skip arg list
 	      (if (and (not js3-bfy-consistent-level-indent-inner-bracket)
 		       (js3-bfy-looking-back (concat
-					  ":"
-					  js3-bfy-skip-newlines-re
-					  "\\<function\\>"
-					  js3-bfy-skip-newlines-re)))
+					      ":"
+					      js3-bfy-skip-newlines-re
+					      "\\<function\\>"
+					      js3-bfy-skip-newlines-re)))
 		  (progn
 		    (js3-bfy-re-search-backward (concat
-					     ":"
-					     js3-bfy-skip-newlines-re
-					     "\\<function\\>"
-					     js3-bfy-skip-newlines-re))
+						 ":"
+						 js3-bfy-skip-newlines-re
+						 "\\<function\\>"
+						 js3-bfy-skip-newlines-re))
 		    (js3-bfy-backward-clean)
 		    (if (looking-back "[{[(,][^{[(,\n]*")
 			(progn

@@ -67,7 +67,7 @@ Any node in the list may be nil, for convenience."
     (when node
       (setf (js3-bfy-node-abs node) (js3-bfy-node-pos node))
       (setf (js3-bfy-node-pos node) (- (js3-bfy-node-pos node)
-                                   (js3-bfy-node-pos n))))))
+				       (js3-bfy-node-pos n))))))
 
 (defsubst js3-bfy-node-add-children (parent &rest nodes)
   "Set parent node of NODES to PARENT, and return PARENT.
@@ -144,8 +144,8 @@ If any given node in NODES is nil, doesn't record that link."
 (defun js3-bfy-scope-set-parent-scope (scope parent)
   (setf (js3-bfy-scope-parent-scope scope) parent
         (js3-bfy-scope-top scope) (if (null parent)
-                                  scope
-                                (js3-bfy-scope-top parent))))
+				      scope
+				    (js3-bfy-scope-top parent))))
 
 (defun js3-bfy-node-get-enclosing-scope (node)
   "Return the innermost `js3-bfy-scope' node surrounding NODE.
@@ -2229,9 +2229,9 @@ If NODE is the ast-root, returns nil."
   "Return t if NODE is a nested function, or is inside a nested function."
   (unless (js3-bfy-ast-root-p node)
     (js3-bfy-function-node-p (if (js3-bfy-function-node-p node)
-                             (js3-bfy-node-parent-script-or-fn node)
-                           (js3-bfy-node-parent-script-or-fn
-                            (js3-bfy-node-parent-script-or-fn node))))))
+				 (js3-bfy-node-parent-script-or-fn node)
+			       (js3-bfy-node-parent-script-or-fn
+				(js3-bfy-node-parent-script-or-fn node))))))
 
 (defsubst js3-bfy-shift-kids (kids start offset)
   (dolist (kid kids)
@@ -2565,8 +2565,8 @@ Returns t if the function satisfies strict mode requirement."
     (or (js3-bfy-flag-not-set-p n js3-bfy-END_RETURNS_VALUE)
         ;; or it returns a value (or is unreached) at every branch
         (js3-bfy-flag-not-set-p n (logior js3-bfy-END_DROPS_OFF
-                                      js3-bfy-END_RETURNS
-                                      js3-bfy-END_YIELDS)))))
+					  js3-bfy-END_RETURNS
+					  js3-bfy-END_YIELDS)))))
 
 (defun js3-bfy-end-check-if (node)
   "Returns in the then and else blocks must be consistent with each other.
@@ -2577,8 +2577,8 @@ Returns logical OR of END_* flags"
     (if (null th)
         js3-bfy-END_UNREACHED
       (logior (js3-bfy-end-check th) (if el
-                                     (js3-bfy-end-check el)
-                                   js3-bfy-END_DROPS_OFF)))))
+					 (js3-bfy-end-check el)
+				       js3-bfy-END_DROPS_OFF)))))
 
 (defun js3-bfy-end-check-switch (node)
   "Consistency of return statements is checked between the case statements.
@@ -2599,8 +2599,8 @@ Returns logical OR of END_* flags."
     (js3-bfy-clear-flag rv js3-bfy-END_DROPS_OFF)
     ;; examine the default
     (js3-bfy-set-flag rv (if default-case
-                         (js3-bfy-end-check default-case)
-                       js3-bfy-END_DROPS_OFF))
+			     (js3-bfy-end-check default-case)
+			   js3-bfy-END_DROPS_OFF))
     rv))
 
 (defun js3-bfy-end-check-try (node)
@@ -2656,8 +2656,8 @@ Returns logical OR of END_* flags."
 
     ;; look for effect of breaks
     (js3-bfy-set-flag rv (js3-bfy-node-get-prop node
-                                        'CONTROL_BLOCK_PROP
-                                        js3-bfy-END_UNREACHED))
+						'CONTROL_BLOCK_PROP
+						js3-bfy-END_UNREACHED))
     rv))
 
 (defun js3-bfy-end-check-block (node)
@@ -2685,8 +2685,8 @@ particular label.
 Returns logical OR of END_* flags."
   (let ((rv (js3-bfy-end-check (js3-bfy-labeled-stmt-node-stmt node))))
     (logior rv (js3-bfy-node-get-prop node
-                                  'CONTROL_BLOCK_PROP
-                                  js3-bfy-END_UNREACHED))))
+				      'CONTROL_BLOCK_PROP
+				      js3-bfy-END_UNREACHED))))
 
 (defun js3-bfy-end-check-break (node)
   "When a break is encountered annotate the statement being broken
@@ -2694,8 +2694,8 @@ out of by setting its CONTROL_BLOCK_PROP property.
 Returns logical OR of END_* flags."
   (and (js3-bfy-break-node-target node)
        (js3-bfy-node-set-prop (js3-bfy-break-node-target node)
-                          'CONTROL_BLOCK_PROP
-                          js3-bfy-END_DROPS_OFF))
+			      'CONTROL_BLOCK_PROP
+			      js3-bfy-END_DROPS_OFF))
   js3-bfy-END_UNREACHED)
 
 (defun js3-bfy-end-check (node)

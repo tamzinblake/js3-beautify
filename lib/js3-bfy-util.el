@@ -176,7 +176,7 @@ Returns nil if element is not found in the list."
 (defsubst js3-bfy-add-strict-warning (msg-id &optional msg-arg beg end)
   (if js3-bfy-compiler-strict-mode
       (js3-bfy-report-warning msg-id msg-arg beg
-                          (and beg end (- end beg)))))
+			      (and beg end (- end beg)))))
 
 (put 'js3-bfy-syntax-error 'error-conditions
      '(error syntax-error js3-bfy-syntax-error))
