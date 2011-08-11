@@ -23,8 +23,44 @@ variable with predicate PRED."
   "A Javascript pretty-printer based on js3-mode."
   :group 'languages)
 
+(defcustom js3-bfy-compact t
+  "If set to t, try to shorten as much as possible onto one line.
+Overrides other compact settings."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-while nil
+  "If set to t, try to shorten while statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-for nil
+  "If set to t, try to shorten for statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-if nil
+  "If set to t, try to shorten if statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-infix nil
+  "If set to t, try to shorten infix expressions onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-expr nil
+  "If set to t, try to shorten expressions onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-list nil
+  "If set to t, try to shorten lists onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
 (defcustom js3-bfy-max-columns 70
-  "Max number of columns per line"
+  "Max number of columns per line."
   :group 'js3-bfy
   :type 'boolean)
 

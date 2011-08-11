@@ -54,8 +54,44 @@ variable with predicate PRED."
   "A Javascript pretty-printer based on js3-mode."
   :group 'languages)
 
+(defcustom js3-bfy-compact t
+  "If set to t, try to shorten as much as possible onto one line.
+Overrides other compact settings."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-while nil
+  "If set to t, try to shorten while statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-for nil
+  "If set to t, try to shorten for statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-if nil
+  "If set to t, try to shorten if statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-infix nil
+  "If set to t, try to shorten infix expressions onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-expr nil
+  "If set to t, try to shorten expressions onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
+(defcustom js3-bfy-compact-list nil
+  "If set to t, try to shorten lists onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
 (defcustom js3-bfy-max-columns 70
-  "Max number of columns per line"
+  "Max number of columns per line."
   :group 'js3-bfy
   :type 'boolean)
 
@@ -2944,10 +2980,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-visit-ast (js3-bfy-while-node-body n) v))
 
 (defun js3-bfy-print-while-node (n i)
-  (if (and (js3-bfy-block-node-p (js3-bfy-while-node-body n))
+  (if (or (not (or js3-bfy-compact js3-bfy-compact-while))
+	  (and (js3-bfy-block-node-p (js3-bfy-while-node-body n))
 	   (> (length (js3-bfy-block-node-kids
 		       (js3-bfy-while-node-body n)))
-	      1))
+	      1)))
       (js3-bfy-print-while-node-long n i)
     (let ((oldstr js3-bfy-curstr))
       (js3-bfy-print-while-node-compact n i)
@@ -3003,10 +3040,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-visit-ast (js3-bfy-for-node-body n) v))
 
 (defun js3-bfy-print-for-node (n i)
-  (if (and (js3-bfy-block-node-p (js3-bfy-for-node-body n))
-	   (> (length (js3-bfy-block-node-kids
-		       (js3-bfy-for-node-body n)))
-	      1))
+  (if (or (not (or js3-bfy-compact js3-bfy-compact-for))
+	  (and (js3-bfy-block-node-p (js3-bfy-for-node-body n))
+	       (> (length (js3-bfy-block-node-kids
+			   (js3-bfy-for-node-body n)))
+		  1)))
       (js3-bfy-print-for-node-long n i)
     (let ((oldstr js3-bfy-curstr))
       (js3-bfy-print-for-node-compact n i)
@@ -3137,7 +3175,8 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-visit-ast (js3-bfy-if-node-else-part n) v))
 
 (defun js3-bfy-print-if-node (n i)
-  (if (or (js3-bfy-if-node-else-part n)
+  (if (or (not (or js3-bfy-compact js3-bfy-compact-if))
+	  (js3-bfy-if-node-else-part n)
 	  (and (js3-bfy-block-node-p (js3-bfy-if-node-then-part n))
 	       (> (length (js3-bfy-block-node-kids
 			   (js3-bfy-if-node-then-part n)))
@@ -3774,7 +3813,8 @@ The type field inherited from `js3-bfy-node' holds the operator."
     table))
 
 (defun js3-bfy-print-infix-node (args &optional delimiter)
-  (if js3-bfy-multiln
+  (if (or (not (or js3-bfy-compact js3-bfy-compact-infix))
+	  js3-bfy-multiln)
       (js3-bfy-print-infix-node-long args delimiter)
     (let ((oldstr js3-bfy-curstr))
       (js3-bfy-print-infix-node-compact args delimiter)
@@ -3797,7 +3837,19 @@ The type field inherited from `js3-bfy-node' holds the operator."
     (unless op
       (error "unrecognized infix operator %s" (js3-bfy-node-type n)))
     (js3-bfy-print-ast (js3-bfy-infix-node-left n) 0)
-    (js3-bfy-concat-curstr "\n")
+    (if (and (/= tt js3-bfy-ASSIGN)
+	     (/= tt js3-bfy-ASSIGN_BITOR)
+	     (/= tt js3-bfy-ASSIGN_BITXOR)
+	     (/= tt js3-bfy-ASSIGN_BITAND)
+	     (/= tt js3-bfy-ASSIGN_LSH)
+	     (/= tt js3-bfy-ASSIGN_RSH)
+	     (/= tt js3-bfy-ASSIGN_URSH)
+	     (/= tt js3-bfy-ASSIGN_ADD)
+	     (/= tt js3-bfy-ASSIGN_SUB)
+	     (/= tt js3-bfy-ASSIGN_MUL)
+	     (/= tt js3-bfy-ASSIGN_DIV)
+	     (/= tt js3-bfy-ASSIGN_MOD))
+	(js3-bfy-concat-curstr "\n"))
     (js3-bfy-concat-curstr op)
     (js3-bfy-concat-curstr " ")
     (js3-bfy-print-ast (js3-bfy-infix-node-right n) 0)))
@@ -4280,19 +4332,21 @@ as opposed to required parens such as those enclosing an if-conditional."
   (js3-bfy-concat-curstr ")"))
 
 (defun js3-bfy-print-expr (n i)
-  (let ((oldstr js3-bfy-curstr))
-    (js3-bfy-print-expr-compact n i)
-    (when (and (not (string= js3-bfy-curstr oldstr))
-	       (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		   (let ((c (compare-strings js3-bfy-curstr 0 nil
-					     oldstr 0 nil))
-			 (diffstr))
-		     (setq diffstr (substring js3-bfy-curstr c))
-		     (string-match "\n" diffstr))))
-      (setq js3-bfy-curstr oldstr)
-      (js3-bfy-concat-curstr " ")
+  (if (not (or js3-bfy-compact js3-bfy-compact-expr))
       (js3-bfy-print-ast n i)
-      (js3-bfy-concat-curstr "\n"))))
+    (let ((oldstr js3-bfy-curstr))
+      (js3-bfy-print-expr-compact n i)
+      (when (and (not (string= js3-bfy-curstr oldstr))
+		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
+		     (let ((c (compare-strings js3-bfy-curstr 0 nil
+					       oldstr 0 nil))
+			   (diffstr))
+		       (setq diffstr (substring js3-bfy-curstr c))
+		       (string-match "\n" diffstr))))
+	(setq js3-bfy-curstr oldstr)
+	(js3-bfy-concat-curstr " ")
+	(js3-bfy-print-ast n i)
+	(js3-bfy-concat-curstr "\n")))))
 
 (defun js3-bfy-print-expr-compact (n i)
   (js3-bfy-print-ast n i))
@@ -4867,18 +4921,20 @@ If NODE is the ast-root, returns nil."
     (js3-bfy-print-ast node indent)))
 
 (defun js3-bfy-print-list (args &optional delimiter)
-  (let ((oldstr js3-bfy-curstr))
-    (js3-bfy-print-list-compact args delimiter)
-    (when (and (not (string= js3-bfy-curstr oldstr))
-	       (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		   (let ((c (compare-strings js3-bfy-curstr 0 nil
-					     oldstr 0 nil))
-			 (diffstr))
-		     (setq diffstr (substring js3-bfy-curstr c))
-		     (string-match "\n" diffstr))))
-      (setq js3-bfy-curstr oldstr)
-      (js3-bfy-concat-curstr "")
-      (js3-bfy-print-list-long args delimiter))))
+  (if (not (or js3-bfy-compact js3-bfy-compact-list))
+      (js3-bfy-print-list-long args delimiter)
+    (let ((oldstr js3-bfy-curstr))
+      (js3-bfy-print-list-compact args delimiter)
+      (when (and (not (string= js3-bfy-curstr oldstr))
+		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
+		     (let ((c (compare-strings js3-bfy-curstr 0 nil
+					       oldstr 0 nil))
+			   (diffstr))
+		       (setq diffstr (substring js3-bfy-curstr c))
+		       (string-match "\n" diffstr))))
+	(setq js3-bfy-curstr oldstr)
+	(js3-bfy-concat-curstr "")
+	(js3-bfy-print-list-long args delimiter)))))
 
 (defun js3-bfy-print-list-long (args &optional delimiter)
   (loop with len = (length args)
