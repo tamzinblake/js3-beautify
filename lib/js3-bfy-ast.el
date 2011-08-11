@@ -1221,7 +1221,37 @@ The type field inherited from `js3-bfy-node' holds the operator."
           (puthash k v table))
     table))
 
-(defun js3-bfy-print-infix-node (n i)
+(defun js3-bfy-print-infix-node (args &optional delimiter)
+  (if js3-bfy-multiln
+      (js3-bfy-print-infix-node-long args delimiter)
+    (let ((oldstr js3-bfy-curstr))
+      (js3-bfy-print-infix-node-compact args delimiter)
+      (when (and (not (string= js3-bfy-curstr oldstr))
+		 (message (number-to-string (length js3-bfy-curln)))
+		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
+		     (let ((c (compare-strings js3-bfy-curstr 0 nil
+					       oldstr 0 nil))
+			   (diffstr))
+		       (setq diffstr (substring js3-bfy-curstr c))
+		       (string-match "\n" diffstr))))
+	(setq js3-bfy-curstr oldstr)
+	(js3-bfy-concat-curstr "")
+	(setq js3-bfy-multiln t)
+	(js3-bfy-print-infix-node-long args delimiter)
+	(setq js3-bfy-multiln nil)))))
+
+(defun js3-bfy-print-infix-node-long (n i)
+  (let* ((tt (js3-bfy-node-type n))
+         (op (gethash tt js3-bfy-operator-tokens)))
+    (unless op
+      (error "unrecognized infix operator %s" (js3-bfy-node-type n)))
+    (js3-bfy-print-ast (js3-bfy-infix-node-left n) 0)
+    (js3-bfy-concat-curstr "\n")
+    (js3-bfy-concat-curstr op)
+    (js3-bfy-concat-curstr " ")
+    (js3-bfy-print-ast (js3-bfy-infix-node-right n) 0)))
+
+(defun js3-bfy-print-infix-node-compact (n i)
   (let* ((tt (js3-bfy-node-type n))
          (op (gethash tt js3-bfy-operator-tokens)))
     (unless op
@@ -1710,7 +1740,8 @@ as opposed to required parens such as those enclosing an if-conditional."
 		     (string-match "\n" diffstr))))
       (setq js3-bfy-curstr oldstr)
       (js3-bfy-concat-curstr " ")
-      (js3-bfy-print-ast n i))))
+      (js3-bfy-print-ast n i)
+      (js3-bfy-concat-curstr "\n"))))
 
 (defun js3-bfy-print-expr-compact (n i)
   (js3-bfy-print-ast n i))

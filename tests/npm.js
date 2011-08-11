@@ -36,5 +36,18 @@ for (var i = 0; i < 10; i++) {
   }
   end()
 }
-if ( foo && bar && baz && bip && boop && verylongthingy && somethingelsecrazy && thisshouldbelongenough) foo
+if ( foo
+  && bar
+  && baz
+  && ( 1
+    || 2
+    || 3
+     )
+  && boop
+  && verylongthingy
+  && somethingelsecrazy
+  && thisshouldbelongenough
+   ) {
+  foo
+}
 

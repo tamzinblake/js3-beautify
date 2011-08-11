@@ -23,7 +23,7 @@ variable with predicate PRED."
   "A Javascript pretty-printer based on js3-mode."
   :group 'languages)
 
-(defcustom js3-bfy-max-columns 80
+(defcustom js3-bfy-max-columns 70
   "Max number of columns per line"
   :group 'js3-bfy
   :type 'boolean)
@@ -780,6 +780,7 @@ First match-group is the leading whitespace.")
 
 (defvar js3-bfy-curstr "")
 (defvar js3-bfy-curln "")
+(defvar js3-bfy-multiln nil)
 
 (eval-when-compile
   (defvar c-paragraph-start nil)
