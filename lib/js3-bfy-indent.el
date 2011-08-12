@@ -376,10 +376,6 @@ nil."
 
 		  ((and
 		    node
-;;;		    helpful debugging
-;;;		    (message (number-to-string (js3-bfy-node-type node)))
-;;;		    (js3-bfy-print-ast node)
-;;;		    (message (number-to-string (js3-bfy-node-abs node)))
 		    (js3-bfy-node-type node)
 		    (= js3-bfy-VAR (js3-bfy-node-type node))) ; var node
 		   (goto-char (js3-bfy-node-abs node))
@@ -594,13 +590,13 @@ nil."
               (when (eq (char-before) ?\)) (backward-list)) ;skip arg list
 	      (if (and (not js3-bfy-consistent-level-indent-inner-bracket)
 		       (js3-bfy-looking-back (concat
-					      ":"
+					      "\\(:\\|,\\)"
 					      js3-bfy-skip-newlines-re
 					      "\\<function\\>"
 					      js3-bfy-skip-newlines-re)))
 		  (progn
 		    (js3-bfy-re-search-backward (concat
-						 ":"
+						 "\\(:\\|,\\)"
 						 js3-bfy-skip-newlines-re
 						 "\\<function\\>"
 						 js3-bfy-skip-newlines-re))
@@ -612,7 +608,9 @@ nil."
 			  (js3-bfy-re-search-forward "[ \t]*"))
 		      (progn
 			(js3-bfy-re-search-backward "^")
-			(back-to-indentation))))
+			(back-to-indentation)
+			(while (\= (char-after) ?f)
+			  (forward-char)))))
 		(back-to-indentation))
               (cond (same-indent-p
                      (current-column))

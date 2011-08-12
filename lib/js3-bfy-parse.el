@@ -1853,16 +1853,19 @@ Last token parsed must be `js3-bfy-RB'."
 (defun js3-bfy-parse-property-access (tt pn)
   "Parse a property access."
   (let (name
+	(pos (js3-bfy-node-pos pn))
+	end
         ref  ; right side of . operator
         result)
     (js3-bfy-consume-token)
     (js3-bfy-must-match-prop-name "msg.no.name.after.dot")
     (setq name (js3-bfy-create-name-node t js3-bfy-GETPROP)
+	  end (js3-bfy-node-end name)
 	  result (make-js3-bfy-prop-get-node :left pn
-					     :pos js3-bfy-token-beg
+					     :pos pos
 					     :right name
-					     :len (- js3-bfy-token-end
-						     js3-bfy-token-beg)))
+					     :len (- end
+						     pos)))
     (js3-bfy-node-add-children result pn name)
     result))
 
