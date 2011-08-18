@@ -808,6 +808,8 @@ First match-group is the leading whitespace.")
 (defvar js3-bfy-curstr "")
 (defvar js3-bfy-curln "")
 (defvar js3-bfy-multiln nil)
+(defvar js3-bfy-current-buffer nil)
+(defvar js3-bfy-temp-buffer "js3-bfy-temp")
 
 (eval-when-compile
   (defvar c-paragraph-start nil)

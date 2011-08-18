@@ -4,7 +4,7 @@
   (require 'cl))
 
 (defun js3-beautify ()
-  "Bfy JavaScript code in the current buffer."
+  "Beautify JavaScript code in the current buffer."
   (interactive)
   (js3-bfy-check-compat)
   (set-syntax-table js3-bfy-syntax-table)
@@ -46,12 +46,20 @@
   (setq js3-bfy-buffer-dirty-p t
         js3-bfy-parsing nil)
   (js3-bfy-reparse)
-  (js3-bfy-print-tree js3-bfy-ast)
-  (erase-buffer)
-  (insert js3-bfy-curstr)
-  (delete-trailing-whitespace)
-  (js3-bfy-reparse)
-  (indent-region (point-min) (point-max) nil)
+  (save-excursion
+    (setq js3-bfy-current-buffer (current-buffer))
+    (js3-bfy-print-tree js3-bfy-ast)
+    (set-buffer (get-buffer-create js3-bfy-temp-buffer))
+    (mark-whole-buffer)
+    (let ((min (point-min)) (max (- (point-max) 1)))
+      (set-buffer js3-bfy-current-buffer)
+      (erase-buffer)
+      (insert-buffer-substring (get-buffer-create js3-bfy-temp-buffer) min max))
+    (delete-trailing-whitespace)
+    (js3-bfy-reparse)
+    (goto-char (point-min))
+    (while (= (forward-line) 0)
+      (indent-according-to-mode)))
   (js3-bfy-exit))
 
 (defun js3-bfy-check-compat ()
