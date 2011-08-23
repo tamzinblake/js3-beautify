@@ -2371,6 +2371,9 @@ If NODE is the ast-root, returns nil."
   "Prints an AST to js3-bfy-curstr.
 Makes `js3-bfy-ast-parent-nodes' available to the printer functions."
   (let ((max-lisp-eval-depth (max max-lisp-eval-depth 1500)))
+    (set-buffer (get-buffer-create js3-bfy-temp-buffer))
+    (erase-buffer)
+    (set-buffer js3-bfy-current-buffer)
     (js3-bfy-print-ast ast)
     (js3-bfy-print "\n")))
 
