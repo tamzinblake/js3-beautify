@@ -3999,10 +3999,10 @@ The type field inherited from `js3-bfy-node' holds the operator."
     (let ((temp (js3-bfy-print-infix-node-test args delimiter)))
       (if (or (> (length temp) js3-bfy-max-columns)
 	      (string-match "\n" temp))
-	  (progn
-	    (setq js3-bfy-multiln t)
+;;;	  (progn
+;;;	    (setq js3-bfy-multiln t)
 	    (js3-bfy-print-infix-node-long args delimiter)
-	    (setq js3-bfy-multiln nil))
+;;;	    (setq js3-bfy-multiln nil))
 	(js3-bfy-print-infix-node-compact args delimiter)))))
 
 (defun js3-bfy-print-infix-node-long (n i)
