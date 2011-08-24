@@ -5331,13 +5331,14 @@ If NODE is the ast-root, returns nil."
 	  do
 	  (setq temp
 		(concat
+		 temp
 		 (if (and (= count 1) (> len 1))
-		     (js3-bfy-print-test ""))
+		     (js3-bfy-print-test "")
+		   (js3-bfy-print-test ""))
 		 (js3-bfy-print-ast-test arg 0)
 		 (if (< count len)
 		     (js3-bfy-print-test (or delimiter ", "))
-		   (when (> len 1)
-		     (js3-bfy-print-test ""))))))
+		   (js3-bfy-print-test "")))))
     temp))
 
 (defun js3-bfy-print-tree (ast)
