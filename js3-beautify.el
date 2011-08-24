@@ -836,6 +836,10 @@ First match-group is the leading whitespace.")
 
 (defvar js3-bfy-last-indented-line -1)
 
+(defvar js3-bfy-looking-at-parent-for-update nil)
+(defvar js3-bfy-node-found-for-update nil)
+(defvar js3-bfy-node-for-update nil)
+(defvar js3-bfy-pos-for-update 0)
 (defvar js3-bfy-multiln nil)
 (defvar js3-bfy-current-buffer nil)
 (defvar js3-bfy-temp-buffer "js3-bfy-temp")
@@ -2684,6 +2688,50 @@ If any given node in NODES is nil, doesn't record that link."
   "Return absolute buffer position of end of N."
   (+ (js3-bfy-node-abs-pos n) (js3-bfy-node-len n)))
 
+(defun js3-bfy-node-update-len (n p)
+  (setf (js3-bfy-node-len n) (+ (js3-bfy-node-len n) p))
+  (while (setq n (js3-bfy-node-parent n))
+    (setq js3-bfy-looking-at-parent-for-update t)
+    (setq js3-bfy-node-found-for-update nil)
+    (setq js3-bfy-pos-for-update p)
+    (setq js3-bfy-node-for-update n)
+    (js3-bfy-visit-ast (js3-bfy-node-parent n)
+		       #'js3-bfy-node-update-sibling-pos)
+    (setf (js3-bfy-node-len n) (+ (js3-bfy-node-len n) p))))
+
+(defun js3-bfy-node-update-pos (n p)
+  (while (= (js3-bfy-node-pos n) 0)
+    (setq n (js3-bfy-node-parent n)))
+  (setf (js3-bfy-node-pos n) (+ (js3-bfy-node-pos n) p))
+  (setq js3-bfy-looking-at-parent-for-update t)
+  (setq js3-bfy-node-found-for-update nil)
+  (setq js3-bfy-pos-for-update p)
+  (setq js3-bfy-node-for-update n)
+  (js3-bfy-visit-ast (js3-bfy-node-parent n) #'js3-bfy-node-update-sibling-pos)
+  (while (setq n (js3-bfy-node-parent n))
+    (setq js3-bfy-looking-at-parent-for-update t)
+    (setq js3-bfy-node-found-for-update nil)
+    (setq js3-bfy-pos-for-update p)
+    (setq js3-bfy-node-for-update n)
+    (js3-bfy-visit-ast (js3-bfy-node-parent n)
+		       #'js3-bfy-node-update-sibling-pos)
+    (setf (js3-bfy-node-len n) (+ (js3-bfy-node-len n) p)))
+  t)
+
+(defun js3-bfy-node-update-sibling-pos (n end-p)
+  (if end-p
+      nil
+    (if js3-bfy-looking-at-parent-for-update
+	(progn
+	  (setq js3-bfy-looking-at-parent-for-update nil)
+	  t)
+      (if (eq n js3-bfy-node-for-update)
+	  (setq js3-bfy-node-found-for-update t)
+	(when js3-bfy-node-found-for-update
+	  (setf (js3-bfy-node-pos n) (+ (js3-bfy-node-pos n)
+					js3-bfy-pos-for-update))))
+      nil)))
+
 ;; It's important to make sure block nodes have a lisp list for the
 ;; child nodes, to limit printing recursion depth in an AST that
 ;; otherwise consists of defstruct vectors.  Emacs will crash printing
@@ -2717,7 +2765,7 @@ If any given node in NODES is nil, doesn't record that link."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-block-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-scope
             (:include js3-bfy-block-node)
@@ -3001,7 +3049,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print ")"))
 
 (defun js3-bfy-print-do-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-while-node
             (:include js3-bfy-loop-node)
@@ -3175,7 +3223,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-for-in-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-return-node
             (:include js3-bfy-node)
@@ -3202,7 +3250,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "\n"))
 
 (defun js3-bfy-print-return-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-if-node
             (:include js3-bfy-node)
@@ -3243,6 +3291,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 		  1)))
       (js3-bfy-print-if-node-long n i)
     (let ((temp (js3-bfy-print-if-node-test n i)))
+      (print temp)
       (if (or (> (length temp) js3-bfy-max-columns)
 	      (string-match "\n\\(.\\|\n\\)" temp))
 	  (js3-bfy-print-if-node-long n i)
@@ -3317,7 +3366,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
       (js3-bfy-print ""))))
 
 (defun js3-bfy-print-try-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-catch-node
             (:include js3-bfy-node)
@@ -3361,7 +3410,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-catch-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-finally-node
             (:include js3-bfy-node)
@@ -3387,7 +3436,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-finally-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-switch-node
             (:include js3-bfy-node)
@@ -3424,7 +3473,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "\n}\n"))
 
 (defun js3-bfy-print-switch-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-case-node
             (:include js3-bfy-block-node)
@@ -3530,7 +3579,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-with-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-label-node
             (:include js3-bfy-node)
@@ -3758,7 +3807,7 @@ The `params' field is a lisp list of nodes.  Each node is either a simple
       (js3-bfy-print "\n"))))
 
 (defun js3-bfy-print-function-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defsubst js3-bfy-function-name (node)
   "Return function name for NODE, a `js3-bfy-function-node', or nil if anonymous."
@@ -3901,6 +3950,26 @@ The type field will be js3-bfy-CONST for a const decl."
   (js3-bfy-visit-ast (js3-bfy-cond-node-false-expr n) v))
 
 (defun js3-bfy-print-cond-node (n i)
+  (if (or (not (or js3-bfy-compact js3-bfy-compact-infix))
+	  js3-bfy-multiln)
+      (js3-bfy-print-cond-node-long n i)
+    (let ((temp (js3-bfy-print-cond-node-test n i)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n" temp))
+;;;	  (progn
+;;;	    (setq js3-bfy-multiln t)
+	    (js3-bfy-print-cond-node-long n i)
+;;;	    (setq js3-bfy-multiln nil))
+	(js3-bfy-print-cond-node-compact n i)))))
+
+(defun js3-bfy-print-cond-node-long (n i)
+  (js3-bfy-print-ast (js3-bfy-cond-node-test-expr n) 0)
+  (js3-bfy-print "\n? ")
+  (js3-bfy-print-ast (js3-bfy-cond-node-true-expr n) 0)
+  (js3-bfy-print "\n: ")
+  (js3-bfy-print-ast (js3-bfy-cond-node-false-expr n) 0))
+
+(defun js3-bfy-print-cond-node-compact (n i)
   (js3-bfy-print-ast (js3-bfy-cond-node-test-expr n) 0)
   (js3-bfy-print " ? ")
   (js3-bfy-print-ast (js3-bfy-cond-node-true-expr n) 0)
@@ -4023,7 +4092,8 @@ The type field inherited from `js3-bfy-node' holds the operator."
 	     (/= tt js3-bfy-ASSIGN_MUL)
 	     (/= tt js3-bfy-ASSIGN_DIV)
 	     (/= tt js3-bfy-ASSIGN_MOD))
-	(js3-bfy-print "\n"))
+	(js3-bfy-print "\n")
+      (js3-bfy-print " "))
     (js3-bfy-print op)
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-infix-node-right n) 0)))
@@ -7024,10 +7094,10 @@ but not BEFORE."
 (defun js3-bfy-parse-block ()
   "Parser for a curly-delimited statement block.
 Last token matched must be js3-bfy-LC."
-  (let ((pos js3-bfy-token-beg)
-        (pn (make-js3-bfy-scope)))
+  (let* ((pos js3-bfy-token-beg)
+	 (pn (make-js3-bfy-block-node :pos pos)))
     (js3-bfy-consume-token)
-    (js3-bfy-push-scope pn)
+    (js3-bfy-push-scope (make-js3-bfy-scope))
     (unwind-protect
         (progn
           (js3-bfy-parse-statements pn)
@@ -7608,7 +7678,7 @@ Returns the list in reverse order.  Consumes the right-paren token."
               end (js3-bfy-node-end init)
               (js3-bfy-new-node-initializer pn) init)
         (js3-bfy-node-add-children pn init))
-      (setf (js3-bfy-node-len pn) (- beg pos)))  ; end outer if
+      (setf (js3-bfy-node-len pn) (- end beg)))  ; end outer if
     (js3-bfy-parse-member-expr-tail allow-call-syntax pn)))
 
 (defun js3-bfy-parse-member-expr-tail (allow-call-syntax pn)
@@ -8438,7 +8508,7 @@ nil."
       (if (not node)
 	  0
 	(let ((char (following-char))
-	      (abs (js3-bfy-node-abs node))
+	      (abs (js3-bfy-node-abs-pos node))
 	      (type (js3-bfy-node-type node)))
 	  (cond
 
@@ -8603,13 +8673,31 @@ nil."
 (defun js3-bfy-indent-line ()
   "Indent the current line as JavaScript."
   (interactive)
-  (js3-bfy-reparse)
   (save-restriction
     (widen)
     (let* ((parse-status
             (save-excursion (syntax-ppss (point-at-bol))))
-           (offset (- (current-column) (current-indentation))))
-      (indent-line-to (js3-bfy-proper-indentation parse-status))
+           (offset (- (current-column) (current-indentation)))
+	   (proper-indentation (js3-bfy-proper-indentation parse-status))
+	   cur
+	   node
+	   type)
+      (save-excursion
+	(back-to-indentation)
+	(setq node (js3-bfy-node-at-point))
+	(setq type (js3-bfy-node-type node))
+	(setq cur (current-column))
+	(when (or (looking-at ",")
+		  (looking-at js3-bfy-indent-operator-first-re))
+	  (forward-char 2)
+	  (setq node (js3-bfy-node-at-point))))
+      (indent-line-to proper-indentation)
+      (save-excursion
+	(back-to-indentation)
+	(if (or (= type js3-bfy-BLOCK)
+		(looking-at "\\(}\\|)\\|]\\|\n\\)"))
+	    (js3-bfy-node-update-len node (- proper-indentation cur))
+	  (js3-bfy-node-update-pos node (- proper-indentation cur))))
       (when (> offset 0) (forward-char offset)))))
 
 ;;; js3-bfy-indent.el ends here
@@ -8674,8 +8762,66 @@ nil."
     (delete-trailing-whitespace)
     (js3-bfy-reparse)
     (goto-char (point-min))
+    (indent-according-to-mode)
     (while (= (forward-line) 0)
-      (indent-according-to-mode)))
+      (when (not (looking-at "\n"))
+	(indent-according-to-mode))))
+  (js3-bfy-exit))
+
+(defun js3-beautify-no-indent ()
+  "Beautify JavaScript code in the current buffer without indenting."
+  (interactive)
+  (js3-bfy-check-compat)
+  (set-syntax-table js3-bfy-syntax-table)
+  (make-local-variable 'comment-start)
+  (make-local-variable 'comment-end)
+  (make-local-variable 'comment-start-skip)
+  (setq local-abbrev-table js3-bfy-abbrev-table)
+  (set (make-local-variable 'max-lisp-eval-depth)
+       (max max-lisp-eval-depth 3000))
+  (set (make-local-variable 'indent-line-function) #'js3-bfy-indent-line)
+  (set (make-local-variable 'indent-tabs-mode) js3-bfy-indent-tabs-mode)
+
+  (set (make-local-variable 'before-save-hook) #'js3-bfy-before-save)
+  (set (make-local-variable 'next-error-function) #'js3-bfy-next-error)
+  (set (make-local-variable 'beginning-of-defun-function) #'js3-bfy-beginning-of-defun)
+  (set (make-local-variable 'end-of-defun-function) #'js3-bfy-end-of-defun)
+  ;; We un-confuse `parse-partial-sexp' by setting syntax-table properties
+  ;; for characters inside regexp literals.
+  (set (make-local-variable 'parse-sexp-lookup-properties) t)
+  ;; this is necessary to make `show-paren-function' work properly
+  (set (make-local-variable 'parse-sexp-ignore-comments) t)
+  ;; needed for M-x rgrep, among other things
+  (put 'js3-beautify 'find-tag-default-function #'js3-bfy-find-tag)
+
+  ;; some variables needed by cc-engine for paragraph-fill, etc.
+  (setq c-buffer-is-cc-mode t
+        c-comment-prefix-regexp js3-bfy-comment-prefix-regexp
+        c-comment-start-regexp "/[*/]\\|\\s|"
+        c-paragraph-start js3-bfy-paragraph-start
+        c-paragraph-separate "$"
+        comment-start-skip js3-bfy-comment-start-skip
+        c-syntactic-ws-start js3-bfy-syntactic-ws-start
+        c-syntactic-ws-end js3-bfy-syntactic-ws-end
+        c-syntactic-eol js3-bfy-syntactic-eol)
+  (if js3-bfy-emacs22
+      (c-setup-paragraph-variables))
+
+  (set (make-local-variable 'forward-sexp-function) #'js3-bfy-forward-sexp)
+  (setq js3-bfy-buffer-dirty-p t
+        js3-bfy-parsing nil)
+  (js3-bfy-reparse)
+  (save-excursion
+    (setq js3-bfy-current-buffer (current-buffer))
+    (js3-bfy-print-tree js3-bfy-ast)
+    (set-buffer (get-buffer-create js3-bfy-temp-buffer))
+    (mark-whole-buffer)
+    (let ((min (point-min)) (max (- (point-max) 1)))
+      (set-buffer js3-bfy-current-buffer)
+      (erase-buffer)
+      (insert-buffer-substring (get-buffer-create js3-bfy-temp-buffer) min max))
+    (kill-buffer js3-bfy-temp-buffer)
+    (delete-trailing-whitespace))
   (js3-bfy-exit))
 
 (defun js3-bfy-check-compat ()
@@ -8712,6 +8858,7 @@ You can disable this by customizing `js3-bfy-cleanup-whitespace'."
   "Re-parse current buffer after user finishes some data entry.
 If we get any user input while parsing, including cursor motion,
 we discard the parse and reschedule it."
+  (interactive)
   (let (time
         interrupted-p
         (js3-bfy-compiler-strict-mode js3-bfy-show-strict-warnings))

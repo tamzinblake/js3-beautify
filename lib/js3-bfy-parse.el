@@ -1202,10 +1202,10 @@ but not BEFORE."
 (defun js3-bfy-parse-block ()
   "Parser for a curly-delimited statement block.
 Last token matched must be js3-bfy-LC."
-  (let ((pos js3-bfy-token-beg)
-        (pn (make-js3-bfy-scope)))
+  (let* ((pos js3-bfy-token-beg)
+	 (pn (make-js3-bfy-block-node :pos pos)))
     (js3-bfy-consume-token)
-    (js3-bfy-push-scope pn)
+    (js3-bfy-push-scope (make-js3-bfy-scope))
     (unwind-protect
         (progn
           (js3-bfy-parse-statements pn)
@@ -1786,7 +1786,7 @@ Returns the list in reverse order.  Consumes the right-paren token."
               end (js3-bfy-node-end init)
               (js3-bfy-new-node-initializer pn) init)
         (js3-bfy-node-add-children pn init))
-      (setf (js3-bfy-node-len pn) (- beg pos)))  ; end outer if
+      (setf (js3-bfy-node-len pn) (- end beg)))  ; end outer if
     (js3-bfy-parse-member-expr-tail allow-call-syntax pn)))
 
 (defun js3-bfy-parse-member-expr-tail (allow-call-syntax pn)

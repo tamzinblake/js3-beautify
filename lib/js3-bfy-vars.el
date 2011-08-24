@@ -805,6 +805,10 @@ First match-group is the leading whitespace.")
 
 (defvar js3-bfy-last-indented-line -1)
 
+(defvar js3-bfy-looking-at-parent-for-update nil)
+(defvar js3-bfy-node-found-for-update nil)
+(defvar js3-bfy-node-for-update nil)
+(defvar js3-bfy-pos-for-update 0)
 (defvar js3-bfy-multiln nil)
 (defvar js3-bfy-current-buffer nil)
 (defvar js3-bfy-temp-buffer "js3-bfy-temp")

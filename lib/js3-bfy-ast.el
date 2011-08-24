@@ -89,6 +89,50 @@ If any given node in NODES is nil, doesn't record that link."
   "Return absolute buffer position of end of N."
   (+ (js3-bfy-node-abs-pos n) (js3-bfy-node-len n)))
 
+(defun js3-bfy-node-update-len (n p)
+  (setf (js3-bfy-node-len n) (+ (js3-bfy-node-len n) p))
+  (while (setq n (js3-bfy-node-parent n))
+    (setq js3-bfy-looking-at-parent-for-update t)
+    (setq js3-bfy-node-found-for-update nil)
+    (setq js3-bfy-pos-for-update p)
+    (setq js3-bfy-node-for-update n)
+    (js3-bfy-visit-ast (js3-bfy-node-parent n)
+		       #'js3-bfy-node-update-sibling-pos)
+    (setf (js3-bfy-node-len n) (+ (js3-bfy-node-len n) p))))
+
+(defun js3-bfy-node-update-pos (n p)
+  (while (= (js3-bfy-node-pos n) 0)
+    (setq n (js3-bfy-node-parent n)))
+  (setf (js3-bfy-node-pos n) (+ (js3-bfy-node-pos n) p))
+  (setq js3-bfy-looking-at-parent-for-update t)
+  (setq js3-bfy-node-found-for-update nil)
+  (setq js3-bfy-pos-for-update p)
+  (setq js3-bfy-node-for-update n)
+  (js3-bfy-visit-ast (js3-bfy-node-parent n) #'js3-bfy-node-update-sibling-pos)
+  (while (setq n (js3-bfy-node-parent n))
+    (setq js3-bfy-looking-at-parent-for-update t)
+    (setq js3-bfy-node-found-for-update nil)
+    (setq js3-bfy-pos-for-update p)
+    (setq js3-bfy-node-for-update n)
+    (js3-bfy-visit-ast (js3-bfy-node-parent n)
+		       #'js3-bfy-node-update-sibling-pos)
+    (setf (js3-bfy-node-len n) (+ (js3-bfy-node-len n) p)))
+  t)
+
+(defun js3-bfy-node-update-sibling-pos (n end-p)
+  (if end-p
+      nil
+    (if js3-bfy-looking-at-parent-for-update
+	(progn
+	  (setq js3-bfy-looking-at-parent-for-update nil)
+	  t)
+      (if (eq n js3-bfy-node-for-update)
+	  (setq js3-bfy-node-found-for-update t)
+	(when js3-bfy-node-found-for-update
+	  (setf (js3-bfy-node-pos n) (+ (js3-bfy-node-pos n)
+					js3-bfy-pos-for-update))))
+      nil)))
+
 ;; It's important to make sure block nodes have a lisp list for the
 ;; child nodes, to limit printing recursion depth in an AST that
 ;; otherwise consists of defstruct vectors.  Emacs will crash printing
@@ -122,7 +166,7 @@ If any given node in NODES is nil, doesn't record that link."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-block-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-scope
             (:include js3-bfy-block-node)
@@ -406,7 +450,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print ")"))
 
 (defun js3-bfy-print-do-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-while-node
             (:include js3-bfy-loop-node)
@@ -580,7 +624,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-for-in-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-return-node
             (:include js3-bfy-node)
@@ -607,7 +651,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "\n"))
 
 (defun js3-bfy-print-return-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-if-node
             (:include js3-bfy-node)
@@ -648,6 +692,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 		  1)))
       (js3-bfy-print-if-node-long n i)
     (let ((temp (js3-bfy-print-if-node-test n i)))
+      (print temp)
       (if (or (> (length temp) js3-bfy-max-columns)
 	      (string-match "\n\\(.\\|\n\\)" temp))
 	  (js3-bfy-print-if-node-long n i)
@@ -722,7 +767,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
       (js3-bfy-print ""))))
 
 (defun js3-bfy-print-try-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-catch-node
             (:include js3-bfy-node)
@@ -766,7 +811,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-catch-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-finally-node
             (:include js3-bfy-node)
@@ -792,7 +837,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-finally-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-switch-node
             (:include js3-bfy-node)
@@ -829,7 +874,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "\n}\n"))
 
 (defun js3-bfy-print-switch-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-case-node
             (:include js3-bfy-block-node)
@@ -935,7 +980,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "}\n"))
 
 (defun js3-bfy-print-with-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defstruct (js3-bfy-label-node
             (:include js3-bfy-node)
@@ -1163,7 +1208,7 @@ The `params' field is a lisp list of nodes.  Each node is either a simple
       (js3-bfy-print "\n"))))
 
 (defun js3-bfy-print-function-node-test (n i)
-  "\n")
+  "\n\n")
 
 (defsubst js3-bfy-function-name (node)
   "Return function name for NODE, a `js3-bfy-function-node', or nil if anonymous."
@@ -1306,6 +1351,26 @@ The type field will be js3-bfy-CONST for a const decl."
   (js3-bfy-visit-ast (js3-bfy-cond-node-false-expr n) v))
 
 (defun js3-bfy-print-cond-node (n i)
+  (if (or (not (or js3-bfy-compact js3-bfy-compact-infix))
+	  js3-bfy-multiln)
+      (js3-bfy-print-cond-node-long n i)
+    (let ((temp (js3-bfy-print-cond-node-test n i)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n" temp))
+;;;	  (progn
+;;;	    (setq js3-bfy-multiln t)
+	    (js3-bfy-print-cond-node-long n i)
+;;;	    (setq js3-bfy-multiln nil))
+	(js3-bfy-print-cond-node-compact n i)))))
+
+(defun js3-bfy-print-cond-node-long (n i)
+  (js3-bfy-print-ast (js3-bfy-cond-node-test-expr n) 0)
+  (js3-bfy-print "\n? ")
+  (js3-bfy-print-ast (js3-bfy-cond-node-true-expr n) 0)
+  (js3-bfy-print "\n: ")
+  (js3-bfy-print-ast (js3-bfy-cond-node-false-expr n) 0))
+
+(defun js3-bfy-print-cond-node-compact (n i)
   (js3-bfy-print-ast (js3-bfy-cond-node-test-expr n) 0)
   (js3-bfy-print " ? ")
   (js3-bfy-print-ast (js3-bfy-cond-node-true-expr n) 0)
@@ -1428,7 +1493,8 @@ The type field inherited from `js3-bfy-node' holds the operator."
 	     (/= tt js3-bfy-ASSIGN_MUL)
 	     (/= tt js3-bfy-ASSIGN_DIV)
 	     (/= tt js3-bfy-ASSIGN_MOD))
-	(js3-bfy-print "\n"))
+	(js3-bfy-print "\n")
+      (js3-bfy-print " "))
     (js3-bfy-print op)
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-infix-node-right n) 0)))

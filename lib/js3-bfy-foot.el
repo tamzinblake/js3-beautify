@@ -59,8 +59,66 @@
     (delete-trailing-whitespace)
     (js3-bfy-reparse)
     (goto-char (point-min))
+    (indent-according-to-mode)
     (while (= (forward-line) 0)
-      (indent-according-to-mode)))
+      (when (not (looking-at "\n"))
+	(indent-according-to-mode))))
+  (js3-bfy-exit))
+
+(defun js3-beautify-no-indent ()
+  "Beautify JavaScript code in the current buffer without indenting."
+  (interactive)
+  (js3-bfy-check-compat)
+  (set-syntax-table js3-bfy-syntax-table)
+  (make-local-variable 'comment-start)
+  (make-local-variable 'comment-end)
+  (make-local-variable 'comment-start-skip)
+  (setq local-abbrev-table js3-bfy-abbrev-table)
+  (set (make-local-variable 'max-lisp-eval-depth)
+       (max max-lisp-eval-depth 3000))
+  (set (make-local-variable 'indent-line-function) #'js3-bfy-indent-line)
+  (set (make-local-variable 'indent-tabs-mode) js3-bfy-indent-tabs-mode)
+
+  (set (make-local-variable 'before-save-hook) #'js3-bfy-before-save)
+  (set (make-local-variable 'next-error-function) #'js3-bfy-next-error)
+  (set (make-local-variable 'beginning-of-defun-function) #'js3-bfy-beginning-of-defun)
+  (set (make-local-variable 'end-of-defun-function) #'js3-bfy-end-of-defun)
+  ;; We un-confuse `parse-partial-sexp' by setting syntax-table properties
+  ;; for characters inside regexp literals.
+  (set (make-local-variable 'parse-sexp-lookup-properties) t)
+  ;; this is necessary to make `show-paren-function' work properly
+  (set (make-local-variable 'parse-sexp-ignore-comments) t)
+  ;; needed for M-x rgrep, among other things
+  (put 'js3-beautify 'find-tag-default-function #'js3-bfy-find-tag)
+
+  ;; some variables needed by cc-engine for paragraph-fill, etc.
+  (setq c-buffer-is-cc-mode t
+        c-comment-prefix-regexp js3-bfy-comment-prefix-regexp
+        c-comment-start-regexp "/[*/]\\|\\s|"
+        c-paragraph-start js3-bfy-paragraph-start
+        c-paragraph-separate "$"
+        comment-start-skip js3-bfy-comment-start-skip
+        c-syntactic-ws-start js3-bfy-syntactic-ws-start
+        c-syntactic-ws-end js3-bfy-syntactic-ws-end
+        c-syntactic-eol js3-bfy-syntactic-eol)
+  (if js3-bfy-emacs22
+      (c-setup-paragraph-variables))
+
+  (set (make-local-variable 'forward-sexp-function) #'js3-bfy-forward-sexp)
+  (setq js3-bfy-buffer-dirty-p t
+        js3-bfy-parsing nil)
+  (js3-bfy-reparse)
+  (save-excursion
+    (setq js3-bfy-current-buffer (current-buffer))
+    (js3-bfy-print-tree js3-bfy-ast)
+    (set-buffer (get-buffer-create js3-bfy-temp-buffer))
+    (mark-whole-buffer)
+    (let ((min (point-min)) (max (- (point-max) 1)))
+      (set-buffer js3-bfy-current-buffer)
+      (erase-buffer)
+      (insert-buffer-substring (get-buffer-create js3-bfy-temp-buffer) min max))
+    (kill-buffer js3-bfy-temp-buffer)
+    (delete-trailing-whitespace))
   (js3-bfy-exit))
 
 (defun js3-bfy-check-compat ()
@@ -97,6 +155,7 @@ You can disable this by customizing `js3-bfy-cleanup-whitespace'."
   "Re-parse current buffer after user finishes some data entry.
 If we get any user input while parsing, including cursor motion,
 we discard the parse and reschedule it."
+  (interactive)
   (let (time
         interrupted-p
         (js3-bfy-compiler-strict-mode js3-bfy-show-strict-warnings))

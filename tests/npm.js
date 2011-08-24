@@ -39,15 +39,8 @@ for (var i = 0; i < 10; i++) {
 if ( foo
   && bar
   && baz
-  && ( 1
-    || 2
-    || 3
-     )
-  && boop
-  && verylongthingy
-  && somethingelsecrazy
-  && thisshouldbelongenough
+  && (1 || 2 || 3)
+  && boop && verylongthingy && somethingelsecrazy && thisshouldbelongenough
    ) {
   foo
 }
-

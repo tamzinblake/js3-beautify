@@ -374,7 +374,7 @@ nil."
       (if (not node)
 	  0
 	(let ((char (following-char))
-	      (abs (js3-bfy-node-abs node))
+	      (abs (js3-bfy-node-abs-pos node))
 	      (type (js3-bfy-node-type node)))
 	  (cond
 
@@ -539,13 +539,31 @@ nil."
 (defun js3-bfy-indent-line ()
   "Indent the current line as JavaScript."
   (interactive)
-  (js3-bfy-reparse)
   (save-restriction
     (widen)
     (let* ((parse-status
             (save-excursion (syntax-ppss (point-at-bol))))
-           (offset (- (current-column) (current-indentation))))
-      (indent-line-to (js3-bfy-proper-indentation parse-status))
+           (offset (- (current-column) (current-indentation)))
+	   (proper-indentation (js3-bfy-proper-indentation parse-status))
+	   cur
+	   node
+	   type)
+      (save-excursion
+	(back-to-indentation)
+	(setq node (js3-bfy-node-at-point))
+	(setq type (js3-bfy-node-type node))
+	(setq cur (current-column))
+	(when (or (looking-at ",")
+		  (looking-at js3-bfy-indent-operator-first-re))
+	  (forward-char 2)
+	  (setq node (js3-bfy-node-at-point))))
+      (indent-line-to proper-indentation)
+      (save-excursion
+	(back-to-indentation)
+	(if (or (= type js3-bfy-BLOCK)
+		(looking-at "\\(}\\|)\\|]\\|\n\\)"))
+	    (js3-bfy-node-update-len node (- proper-indentation cur))
+	  (js3-bfy-node-update-pos node (- proper-indentation cur))))
       (when (> offset 0) (forward-char offset)))))
 
 ;;; js3-bfy-indent.el ends here
