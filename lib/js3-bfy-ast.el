@@ -108,6 +108,7 @@ If any given node in NODES is nil, doesn't record that link."
 
 (put 'cl-struct-js3-bfy-block-node 'js3-bfy-visitor 'js3-bfy-visit-block)
 (put 'cl-struct-js3-bfy-block-node 'js3-bfy-printer 'js3-bfy-print-block)
+(put 'cl-struct-js3-bfy-block-node 'js3-bfy-printer-test 'js3-bfy-print-block-test)
 
 (defsubst js3-bfy-visit-block (ast callback)
   "Visit the `js3-bfy-block-node' children of AST."
@@ -119,6 +120,9 @@ If any given node in NODES is nil, doesn't record that link."
   (dolist (kid (js3-bfy-block-node-kids n))
     (js3-bfy-print-ast kid (1+ i)))
   (js3-bfy-print "}\n"))
+
+(defun js3-bfy-print-block-test (n i)
+  "\n")
 
 (defstruct (js3-bfy-scope
             (:include js3-bfy-block-node)
@@ -140,6 +144,7 @@ If any given node in NODES is nil, doesn't record that link."
 
 (put 'cl-struct-js3-bfy-scope 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-scope 'js3-bfy-printer 'js3-bfy-print-none)
+(put 'cl-struct-js3-bfy-scope 'js3-bfy-printer-test 'js3-bfy-print-none-test)
 
 (defun js3-bfy-scope-set-parent-scope (scope parent)
   (setf (js3-bfy-scope-parent-scope scope) parent
@@ -213,6 +218,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-error-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-error-node 'js3-bfy-printer 'js3-bfy-print-none)
+(put 'cl-struct-js3-bfy-error-node 'js3-bfy-printer-test 'js3-bfy-print-none-test)
 
 (defstruct (js3-bfy-script-node
             (:include js3-bfy-scope)
@@ -233,10 +239,15 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-script-node 'js3-bfy-visitor 'js3-bfy-visit-block)
 (put 'cl-struct-js3-bfy-script-node 'js3-bfy-printer 'js3-bfy-print-script)
+(put 'cl-struct-js3-bfy-script-node 'js3-bfy-printer-test 'js3-bfy-print-script-test)
 
 (defun js3-bfy-print-script (node indent)
   (dolist (kid (js3-bfy-block-node-kids node))
     (js3-bfy-print-ast kid indent)))
+
+(defun js3-bfy-print-script-test (node indent)
+  (dolist (kid (js3-bfy-block-node-kids node))
+    (js3-bfy-print-ast-test kid indent)))
 
 (defstruct (js3-bfy-ast-root
             (:include js3-bfy-script-node)
@@ -255,6 +266,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-ast-root 'js3-bfy-visitor 'js3-bfy-visit-ast-root)
 (put 'cl-struct-js3-bfy-ast-root 'js3-bfy-printer 'js3-bfy-print-script)
+(put 'cl-struct-js3-bfy-ast-root 'js3-bfy-printer-test 'js3-bfy-print-script-test)
 
 (defun js3-bfy-visit-ast-root (ast callback)
   (dolist (kid (js3-bfy-ast-root-kids ast))
@@ -274,11 +286,15 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-comment-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-comment-node 'js3-bfy-printer 'js3-bfy-print-comment)
+(put 'cl-struct-js3-bfy-comment-node 'js3-bfy-printer-test 'js3-bfy-print-comment-test)
 
 (defun js3-bfy-print-comment (n i)
   ;; We really ought to link end-of-line comments to their nodes.
   ;; Or maybe we could add a new comment type, 'endline.
   (js3-bfy-print (js3-bfy-node-string n)))
+
+(defun js3-bfy-print-comment-test (n i)
+  (js3-bfy-print-test (js3-bfy-node-string n)))
 
 (defstruct (js3-bfy-expr-stmt-node
             (:include js3-bfy-node)
@@ -297,6 +313,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-expr-stmt-node 'js3-bfy-visitor 'js3-bfy-visit-expr-stmt-node)
 (put 'cl-struct-js3-bfy-expr-stmt-node 'js3-bfy-printer 'js3-bfy-print-expr-stmt-node)
+(put 'cl-struct-js3-bfy-expr-stmt-node 'js3-bfy-printer-test 'js3-bfy-print-expr-stmt-node-test)
 
 (defun js3-bfy-visit-expr-stmt-node (n v)
   (js3-bfy-visit-ast (js3-bfy-expr-stmt-node-expr n) v))
@@ -324,6 +341,30 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 	   (js3-bfy-node-type (js3-bfy-expr-stmt-node-expr n)))
 	(js3-bfy-print "\n"))))
 
+(defun js3-bfy-print-expr-stmt-node-test (n indent)
+  (concat
+   (let ((expr (js3-bfy-expr-stmt-node-expr n)))
+     (let ((type (js3-bfy-node-type expr)))
+       (if (= js3-bfy-CALL type)
+	   (let ((target (js3-bfy-call-node-target expr)))
+	     (if (= js3-bfy-GETPROP (js3-bfy-node-type target))
+		 (let ((left (js3-bfy-prop-get-node-left target)))
+		   (if (or (= js3-bfy-ARRAYLIT
+			      (js3-bfy-node-type left))
+			   (= js3-bfy-LP
+			      (js3-bfy-node-type left)))
+		       (js3-bfy-print-test ";"))))))
+       (if (or (= type js3-bfy-POS)
+	       (= type js3-bfy-NEG))
+	   (js3-bfy-print-test ";"))))
+   (js3-bfy-print-ast-test (js3-bfy-expr-stmt-node-expr n) indent)
+   (when (/= js3-bfy-CASE
+	     (js3-bfy-node-type (js3-bfy-node-parent n)))
+     (js3-bfy-print-test "\n")
+     (if (= js3-bfy-VAR
+	    (js3-bfy-node-type (js3-bfy-expr-stmt-node-expr n)))
+	 (js3-bfy-print-test "\n")))))
+
 (defstruct (js3-bfy-loop-node
             (:include js3-bfy-scope)
             (:constructor nil))
@@ -350,6 +391,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-do-node 'js3-bfy-visitor 'js3-bfy-visit-do-node)
 (put 'cl-struct-js3-bfy-do-node 'js3-bfy-printer 'js3-bfy-print-do-node)
+(put 'cl-struct-js3-bfy-do-node 'js3-bfy-printer-test 'js3-bfy-print-do-node-test)
 
 (defun js3-bfy-visit-do-node (n v)
   (js3-bfy-visit-ast (js3-bfy-do-node-body n) v)
@@ -362,6 +404,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "} while (")
   (js3-bfy-print-ast (js3-bfy-do-node-condition n) 0)
   (js3-bfy-print ")"))
+
+(defun js3-bfy-print-do-node-test (n i)
+  "\n")
 
 (defstruct (js3-bfy-while-node
             (:include js3-bfy-loop-node)
@@ -379,6 +424,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-while-node 'js3-bfy-visitor 'js3-bfy-visit-while-node)
 (put 'cl-struct-js3-bfy-while-node 'js3-bfy-printer 'js3-bfy-print-while-node)
+(put 'cl-struct-js3-bfy-while-node 'js3-bfy-printer-test 'js3-bfy-print-while-node-test)
 
 (defun js3-bfy-visit-while-node (n v)
   (js3-bfy-visit-ast (js3-bfy-while-node-condition n) v)
@@ -391,18 +437,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 		       (js3-bfy-while-node-body n)))
 	      1)))
       (js3-bfy-print-while-node-long n i)
-    (let ((oldstr js3-bfy-curstr))
-      (js3-bfy-print-while-node-compact n i)
-      (when (and (not (string= js3-bfy-curstr oldstr))
-		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		     (let ((c (compare-strings js3-bfy-curstr 0 nil
-					       oldstr 0 nil))
-			   (diffstr))
-		       (setq diffstr (substring js3-bfy-curstr c))
-		       (string-match "\n\\(.\\|\n\\)" diffstr))))
-	(setq js3-bfy-curstr oldstr)
-	(js3-bfy-print "")
-	(js3-bfy-print-while-node-long n i)))))
+    (let ((temp (js3-bfy-print-while-node-test n i)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n\\(.\\|\n\\)" temp))
+	  (js3-bfy-print-while-node-long n i))
+      (js3-bfy-print-while-node-compact n i))))
 
 (defun js3-bfy-print-while-node-long (n i)
   (js3-bfy-print "while (")
@@ -416,6 +455,13 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print-ast (js3-bfy-while-node-condition n) 0)
   (js3-bfy-print ") ")
   (js3-bfy-print-body (js3-bfy-while-node-body n) (1+ i)))
+
+(defun js3-bfy-print-while-node-test (n i)
+  (concat
+   (js3-bfy-print-test "while (")
+   (js3-bfy-print-ast-test (js3-bfy-while-node-condition n) 0)
+   (js3-bfy-print-test ") ")
+   (js3-bfy-print-body-test (js3-bfy-while-node-body n) (1+ i))))
 
 (defstruct (js3-bfy-for-node
             (:include js3-bfy-loop-node)
@@ -437,6 +483,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-for-node 'js3-bfy-visitor 'js3-bfy-visit-for-node)
 (put 'cl-struct-js3-bfy-for-node 'js3-bfy-printer 'js3-bfy-print-for-node)
+(put 'cl-struct-js3-bfy-for-node 'js3-bfy-printer-test 'js3-bfy-print-for-node-test)
 
 (defun js3-bfy-visit-for-node (n v)
   (js3-bfy-visit-ast (js3-bfy-for-node-init n) v)
@@ -451,18 +498,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 			   (js3-bfy-for-node-body n)))
 		  1)))
       (js3-bfy-print-for-node-long n i)
-    (let ((oldstr js3-bfy-curstr))
-      (js3-bfy-print-for-node-compact n i)
-      (when (and (not (string= js3-bfy-curstr oldstr))
-		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		     (let ((c (compare-strings js3-bfy-curstr 0 nil
-					       oldstr 0 nil))
-			   (diffstr))
-		       (setq diffstr (substring js3-bfy-curstr c))
-		       (string-match "\n\\(.\\|\n\\)" diffstr))))
-	(setq js3-bfy-curstr oldstr)
-	(js3-bfy-print "")
-	(js3-bfy-print-for-node-long n i)))))
+    (let ((temp (js3-bfy-print-for-node-test n i)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n\\(.\\|\n\\)" temp))
+	  (js3-bfy-print-for-node-long n i)
+	(js3-bfy-print-for-node-compact n i)))))
 
 (defun js3-bfy-print-for-node-long (n i)
   (js3-bfy-print "for (")
@@ -484,6 +524,17 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print-ast (js3-bfy-for-node-update n) 0)
   (js3-bfy-print ") ")
   (js3-bfy-print-body (js3-bfy-for-node-body n) (1+ i)))
+
+(defun js3-bfy-print-for-node-test (n i)
+  (concat
+   (js3-bfy-print-test "for (")
+   (js3-bfy-print-ast-test (js3-bfy-for-node-init n) 0)
+   (js3-bfy-print-test "; ")
+   (js3-bfy-print-ast-test (js3-bfy-for-node-condition n) 0)
+   (js3-bfy-print-test "; ")
+   (js3-bfy-print-ast-test (js3-bfy-for-node-update n) 0)
+   (js3-bfy-print-test ") ")
+   (js3-bfy-print-body-test (js3-bfy-for-node-body n) (1+ i))))
 
 (defstruct (js3-bfy-for-in-node
             (:include js3-bfy-loop-node)
@@ -509,6 +560,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-for-in-node 'js3-bfy-visitor 'js3-bfy-visit-for-in-node)
 (put 'cl-struct-js3-bfy-for-in-node 'js3-bfy-printer 'js3-bfy-print-for-in-node)
+(put 'cl-struct-js3-bfy-for-in-node 'js3-bfy-printer-test 'js3-bfy-print-for-in-node-test)
 
 (defun js3-bfy-visit-for-in-node (n v)
   (js3-bfy-visit-ast (js3-bfy-for-in-node-iterator n) v)
@@ -527,6 +579,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print-body (js3-bfy-for-in-node-body n) (1+ i))
   (js3-bfy-print "}\n"))
 
+(defun js3-bfy-print-for-in-node-test (n i)
+  "\n")
+
 (defstruct (js3-bfy-return-node
             (:include js3-bfy-node)
             (:constructor nil)
@@ -540,6 +595,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-return-node 'js3-bfy-visitor 'js3-bfy-visit-return-node)
 (put 'cl-struct-js3-bfy-return-node 'js3-bfy-printer 'js3-bfy-print-return-node)
+(put 'cl-struct-js3-bfy-return-node 'js3-bfy-printer-test 'js3-bfy-print-return-node-test)
 
 (defun js3-bfy-visit-return-node (n v)
   (js3-bfy-visit-ast (js3-bfy-return-node-retval n) v))
@@ -549,6 +605,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (if (js3-bfy-return-node-retval n)
       (js3-bfy-print-ast (js3-bfy-return-node-retval n) 0))
   (js3-bfy-print "\n"))
+
+(defun js3-bfy-print-return-node-test (n i)
+  "\n")
 
 (defstruct (js3-bfy-if-node
             (:include js3-bfy-node)
@@ -573,6 +632,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-if-node 'js3-bfy-visitor 'js3-bfy-visit-if-node)
 (put 'cl-struct-js3-bfy-if-node 'js3-bfy-printer 'js3-bfy-print-if-node)
+(put 'cl-struct-js3-bfy-if-node 'js3-bfy-printer-test 'js3-bfy-print-if-node-test)
 
 (defun js3-bfy-visit-if-node (n v)
   (js3-bfy-visit-ast (js3-bfy-if-node-condition n) v)
@@ -587,18 +647,11 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 			   (js3-bfy-if-node-then-part n)))
 		  1)))
       (js3-bfy-print-if-node-long n i)
-    (let ((oldstr js3-bfy-curstr))
-      (js3-bfy-print-if-node-compact n i)
-      (when (and (not (string= js3-bfy-curstr oldstr))
-		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		     (let ((c (compare-strings js3-bfy-curstr 0 nil
-					       oldstr 0 nil))
-			   (diffstr))
-		       (setq diffstr (substring js3-bfy-curstr c))
-		       (string-match "\n\\(.\\|\n\\)" diffstr))))
-	(setq js3-bfy-curstr oldstr)
-	(js3-bfy-print "")
-	(js3-bfy-print-if-node-long n i)))))
+    (let ((temp (js3-bfy-print-if-node-test n i)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n\\(.\\|\n\\)" temp))
+	  (js3-bfy-print-if-node-long n i)
+	(js3-bfy-print-if-node-compact n i)))))
 
 (defun js3-bfy-print-if-node-long (n i)
   (js3-bfy-print "if (")
@@ -623,6 +676,13 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print ") ")
   (js3-bfy-print-body (js3-bfy-if-node-then-part n) (1+ i)))
 
+(defun js3-bfy-print-if-node-test (n i)
+  (concat
+   (js3-bfy-print-test "if (")
+   (js3-bfy-print-expr-test (js3-bfy-if-node-condition n) 0)
+   (js3-bfy-print-test ") ")
+   (js3-bfy-print-body-test (js3-bfy-if-node-then-part n) (1+ i))))
+
 (defstruct (js3-bfy-try-node
             (:include js3-bfy-node)
             (:constructor nil)
@@ -640,6 +700,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-try-node 'js3-bfy-visitor 'js3-bfy-visit-try-node)
 (put 'cl-struct-js3-bfy-try-node 'js3-bfy-printer 'js3-bfy-print-try-node)
+(put 'cl-struct-js3-bfy-try-node 'js3-bfy-printer-test 'js3-bfy-print-try-node-test)
 
 (defun js3-bfy-visit-try-node (n v)
   (js3-bfy-visit-ast (js3-bfy-try-node-try-block n) v)
@@ -659,6 +720,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
     (if finally
         (js3-bfy-print-ast finally i)
       (js3-bfy-print ""))))
+
+(defun js3-bfy-print-try-node-test (n i)
+  "\n")
 
 (defstruct (js3-bfy-catch-node
             (:include js3-bfy-node)
@@ -683,6 +747,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-catch-node 'js3-bfy-visitor 'js3-bfy-visit-catch-node)
 (put 'cl-struct-js3-bfy-catch-node 'js3-bfy-printer 'js3-bfy-print-catch-node)
+(put 'cl-struct-js3-bfy-catch-node 'js3-bfy-printer-test 'js3-bfy-print-catch-node-test)
 
 (defun js3-bfy-visit-catch-node (n v)
   (js3-bfy-visit-ast (js3-bfy-catch-node-var-name n) v)
@@ -700,6 +765,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print-body (js3-bfy-catch-node-block n) (1+ i))
   (js3-bfy-print "}\n"))
 
+(defun js3-bfy-print-catch-node-test (n i)
+  "\n")
+
 (defstruct (js3-bfy-finally-node
             (:include js3-bfy-node)
             (:constructor nil)
@@ -713,6 +781,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-finally-node 'js3-bfy-visitor 'js3-bfy-visit-finally-node)
 (put 'cl-struct-js3-bfy-finally-node 'js3-bfy-printer 'js3-bfy-print-finally-node)
+(put 'cl-struct-js3-bfy-finally-node 'js3-bfy-printer-test 'js3-bfy-print-finally-node-test)
 
 (defun js3-bfy-visit-finally-node (n v)
   (js3-bfy-visit-ast (js3-bfy-finally-node-body n) v))
@@ -721,6 +790,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print " finally {\n")
   (js3-bfy-print-body (js3-bfy-finally-node-body n) (1+ i))
   (js3-bfy-print "}\n"))
+
+(defun js3-bfy-print-finally-node-test (n i)
+  "\n")
 
 (defstruct (js3-bfy-switch-node
             (:include js3-bfy-node)
@@ -741,6 +813,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-switch-node 'js3-bfy-visitor 'js3-bfy-visit-switch-node)
 (put 'cl-struct-js3-bfy-switch-node 'js3-bfy-printer 'js3-bfy-print-switch-node)
+(put 'cl-struct-js3-bfy-switch-node 'js3-bfy-printer-test 'js3-bfy-print-switch-node-test)
 
 (defun js3-bfy-visit-switch-node (n v)
   (js3-bfy-visit-ast (js3-bfy-switch-node-discriminant n) v)
@@ -754,6 +827,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (dolist (case (js3-bfy-switch-node-cases n))
     (js3-bfy-print-ast case i))
   (js3-bfy-print "\n}\n"))
+
+(defun js3-bfy-print-switch-node-test (n i)
+  "\n")
 
 (defstruct (js3-bfy-case-node
             (:include js3-bfy-block-node)
@@ -769,6 +845,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-case-node 'js3-bfy-visitor 'js3-bfy-visit-case-node)
 (put 'cl-struct-js3-bfy-case-node 'js3-bfy-printer 'js3-bfy-print-case-node)
+(put 'cl-struct-js3-bfy-case-node 'js3-bfy-printer-test 'js3-bfy-print-case-node-test)
 
 (defun js3-bfy-visit-case-node (n v)
   (js3-bfy-visit-ast (js3-bfy-case-node-expr n) v)
@@ -783,6 +860,19 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (dolist (kid (js3-bfy-case-node-kids n))
     (js3-bfy-print-ast kid (1+ i))))
 
+(defun js3-bfy-print-case-node-test (n i)
+  (concat
+   (if (null (js3-bfy-case-node-expr n))
+       (js3-bfy-print-test "\ndefault: ")
+     (concat
+      (js3-bfy-print-test "\ncase ")
+      (js3-bfy-print-ast-test (js3-bfy-case-node-expr n) 0)
+      (js3-bfy-print-test ": ")))
+   (let ((temp ""))
+     (dolist (kid (js3-bfy-case-node-kids n))
+       (setq temp (concat temp (js3-bfy-print-ast-test kid (1+ i)))))
+     temp)))
+
 (defstruct (js3-bfy-throw-node
             (:include js3-bfy-node)
             (:constructor nil)
@@ -796,6 +886,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-throw-node 'js3-bfy-visitor 'js3-bfy-visit-throw-node)
 (put 'cl-struct-js3-bfy-throw-node 'js3-bfy-printer 'js3-bfy-print-throw-node)
+(put 'cl-struct-js3-bfy-throw-node 'js3-bfy-printer-test 'js3-bfy-print-throw-node-test)
 
 (defun js3-bfy-visit-throw-node (n v)
   (js3-bfy-visit-ast (js3-bfy-throw-node-expr n) v))
@@ -804,6 +895,12 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print "throw ")
   (js3-bfy-print-ast (js3-bfy-throw-node-expr n) 0)
   (js3-bfy-print " "))
+
+(defun js3-bfy-print-throw-node-test (n i)
+  (concat
+   (js3-bfy-print-test "throw ")
+   (js3-bfy-print-ast-test (js3-bfy-throw-node-expr n) 0)
+   (js3-bfy-print-test " ")))
 
 (defstruct (js3-bfy-with-node
             (:include js3-bfy-node)
@@ -824,6 +921,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-with-node 'js3-bfy-visitor 'js3-bfy-visit-with-node)
 (put 'cl-struct-js3-bfy-with-node 'js3-bfy-printer 'js3-bfy-print-with-node)
+(put 'cl-struct-js3-bfy-with-node 'js3-bfy-printer-test 'js3-bfy-print-with-node-test)
 
 (defun js3-bfy-visit-with-node (n v)
   (js3-bfy-visit-ast (js3-bfy-with-node-object n) v)
@@ -835,6 +933,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-print ") {\n")
   (js3-bfy-print-body (js3-bfy-with-node-body n) (1+ i))
   (js3-bfy-print "}\n"))
+
+(defun js3-bfy-print-with-node-test (n i)
+  "\n")
 
 (defstruct (js3-bfy-label-node
             (:include js3-bfy-node)
@@ -850,9 +951,13 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 
 (put 'cl-struct-js3-bfy-label-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-label-node 'js3-bfy-printer 'js3-bfy-print-label)
+(put 'cl-struct-js3-bfy-label-node 'js3-bfy-printer-test 'js3-bfy-print-label-test)
 
 (defun js3-bfy-print-label (n i)
   (js3-bfy-print (concat (js3-bfy-label-node-name n) ":")))
+
+(defun js3-bfy-print-label-test (n i)
+  (js3-bfy-print-test (concat (js3-bfy-label-node-name n) ":")))
 
 (defstruct (js3-bfy-labeled-stmt-node
             (:include js3-bfy-node)
@@ -872,6 +977,7 @@ Multiple labels for a statement are collapsed into the labels field."
 
 (put 'cl-struct-js3-bfy-labeled-stmt-node 'js3-bfy-visitor 'js3-bfy-visit-labeled-stmt)
 (put 'cl-struct-js3-bfy-labeled-stmt-node 'js3-bfy-printer 'js3-bfy-print-labeled-stmt)
+(put 'cl-struct-js3-bfy-labeled-stmt-node 'js3-bfy-printer-test 'js3-bfy-print-labeled-stmt-test)
 
 (defun js3-bfy-get-label-by-name (lbl-stmt name)
   "Return a `js3-bfy-label-node' by NAME from LBL-STMT's labels list.
@@ -893,6 +999,14 @@ Returns nil if no such label is in the list."
   (dolist (label (js3-bfy-labeled-stmt-node-labels n))
     (js3-bfy-print-ast label i))
   (js3-bfy-print-ast (js3-bfy-labeled-stmt-node-stmt n) (1+ i)))
+
+(defun js3-bfy-print-labeled-stmt-test (n i)
+  (concat
+   (let ((temp ""))
+     (dolist (label (js3-bfy-labeled-stmt-node-labels n))
+       (setq temp (concat temp (js3-bfy-print-ast-test label i))))
+     temp)
+   (js3-bfy-print-ast-test (js3-bfy-labeled-stmt-node-stmt n) (1+ i))))
 
 (defun js3-bfy-labeled-stmt-node-contains (node label)
   "Return t if NODE contains LABEL in its label set.
@@ -933,12 +1047,21 @@ is the target of the break - a label node or enclosing loop/switch statement.")
 
 (put 'cl-struct-js3-bfy-break-node 'js3-bfy-visitor 'js3-bfy-visit-jump-node)
 (put 'cl-struct-js3-bfy-break-node 'js3-bfy-printer 'js3-bfy-print-break-node)
+(put 'cl-struct-js3-bfy-break-node 'js3-bfy-printer-test 'js3-bfy-print-break-node-test)
 
 (defun js3-bfy-print-break-node (n i)
   (js3-bfy-print "; break")
   (when (js3-bfy-break-node-label n)
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-break-node-label n) 0)))
+
+(defun js3-bfy-print-break-node-test (n i)
+  (concat
+   (js3-bfy-print-test "; break")
+   (when (js3-bfy-break-node-label n)
+     (concat
+      (js3-bfy-print-test " ")
+      (js3-bfy-print-ast-test (js3-bfy-break-node-label n) 0)))))
 
 (defstruct (js3-bfy-continue-node
             (:include js3-bfy-jump-node)
@@ -956,12 +1079,21 @@ a `js3-bfy-label-node' or the innermost enclosing loop.")
 
 (put 'cl-struct-js3-bfy-continue-node 'js3-bfy-visitor 'js3-bfy-visit-jump-node)
 (put 'cl-struct-js3-bfy-continue-node 'js3-bfy-printer 'js3-bfy-print-continue-node)
+(put 'cl-struct-js3-bfy-continue-node 'js3-bfy-printer-test 'js3-bfy-print-continue-node-test)
 
 (defun js3-bfy-print-continue-node (n i)
   (js3-bfy-print "; continue")
   (when (js3-bfy-continue-node-label n)
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-continue-node-label n) 0)))
+
+(defun js3-bfy-print-continue-node-test (n i)
+  (concat
+   (js3-bfy-print-test "; continue")
+   (when (js3-bfy-continue-node-label n)
+     (concat
+      (js3-bfy-print-test " ")
+      (js3-bfy-print-ast-test (js3-bfy-continue-node-label n) 0)))))
 
 (defstruct (js3-bfy-function-node
             (:include js3-bfy-script-node)
@@ -995,6 +1127,7 @@ The `params' field is a lisp list of nodes.  Each node is either a simple
 
 (put 'cl-struct-js3-bfy-function-node 'js3-bfy-visitor 'js3-bfy-visit-function-node)
 (put 'cl-struct-js3-bfy-function-node 'js3-bfy-printer 'js3-bfy-print-function-node)
+(put 'cl-struct-js3-bfy-function-node 'js3-bfy-printer-test 'js3-bfy-print-function-node-test)
 
 (defun js3-bfy-visit-function-node (n v)
   (js3-bfy-visit-ast (js3-bfy-function-node-name n) v)
@@ -1029,6 +1162,9 @@ The `params' field is a lisp list of nodes.  Each node is either a simple
     (unless expr
       (js3-bfy-print "\n"))))
 
+(defun js3-bfy-print-function-node-test (n i)
+  "\n")
+
 (defsubst js3-bfy-function-name (node)
   "Return function name for NODE, a `js3-bfy-function-node', or nil if anonymous."
   (and (js3-bfy-function-node-name node)
@@ -1057,6 +1193,7 @@ declarations, the node begins at the position of the first child."
 
 (put 'cl-struct-js3-bfy-var-decl-node 'js3-bfy-visitor 'js3-bfy-visit-var-decl)
 (put 'cl-struct-js3-bfy-var-decl-node 'js3-bfy-printer 'js3-bfy-print-var-decl)
+(put 'cl-struct-js3-bfy-var-decl-node 'js3-bfy-printer-test 'js3-bfy-print-var-decl-test)
 
 (defun js3-bfy-visit-var-decl (n v)
   (dolist (kid (js3-bfy-var-decl-node-kids n))
@@ -1080,6 +1217,30 @@ declarations, the node begins at the position of the first child."
           (if (< count len)
               (js3-bfy-print "\n, ")))))
 
+(defun js3-bfy-print-var-decl-test (n i)
+  (let ((tt (js3-bfy-var-decl-node-decl-type n)))
+    (concat
+     (js3-bfy-print-test
+      (cond
+       ((= tt js3-bfy-VAR) "var ")
+       ((= tt js3-bfy-LET) "")  ; handled by parent let-{expr/stmt}
+       ((= tt js3-bfy-CONST) "const ")
+       (t
+	(error "malformed var-decl node"))))
+     (let ((temp ""))
+       (loop with kids = (js3-bfy-var-decl-node-kids n)
+	     with len = (length kids)
+	     for kid in kids
+	     for count from 1
+	     do
+	      (setq temp
+		    (concat
+		     temp
+		     (js3-bfy-print-ast-test kid 0)
+		     (if (< count len)
+			 (js3-bfy-print-test "\n, ")))))
+       temp))))
+
 (defstruct (js3-bfy-var-init-node
             (:include js3-bfy-node)
             (:constructor nil)
@@ -1096,6 +1257,7 @@ The type field will be js3-bfy-CONST for a const decl."
 
 (put 'cl-struct-js3-bfy-var-init-node 'js3-bfy-visitor 'js3-bfy-visit-var-init-node)
 (put 'cl-struct-js3-bfy-var-init-node 'js3-bfy-printer 'js3-bfy-print-var-init-node)
+(put 'cl-struct-js3-bfy-var-init-node 'js3-bfy-printer-test 'js3-bfy-print-var-init-node-test)
 
 (defun js3-bfy-visit-var-init-node (n v)
   (js3-bfy-visit-ast (js3-bfy-var-init-node-target n) v)
@@ -1106,6 +1268,14 @@ The type field will be js3-bfy-CONST for a const decl."
   (when (js3-bfy-var-init-node-initializer n)
     (js3-bfy-print " = ")
     (js3-bfy-print-ast (js3-bfy-var-init-node-initializer n) 0)))
+
+(defun js3-bfy-print-var-init-node-test (n i)
+  (concat
+   (js3-bfy-print-ast-test (js3-bfy-var-init-node-target n) 0)
+   (when (js3-bfy-var-init-node-initializer n)
+     (concat
+      (js3-bfy-print-test " = ")
+      (js3-bfy-print-ast-test (js3-bfy-var-init-node-initializer n) 0)))))
 
 (defstruct (js3-bfy-cond-node
             (:include js3-bfy-node)
@@ -1128,6 +1298,7 @@ The type field will be js3-bfy-CONST for a const decl."
 
 (put 'cl-struct-js3-bfy-cond-node 'js3-bfy-visitor 'js3-bfy-visit-cond-node)
 (put 'cl-struct-js3-bfy-cond-node 'js3-bfy-printer 'js3-bfy-print-cond-node)
+(put 'cl-struct-js3-bfy-cond-node 'js3-bfy-printer-test 'js3-bfy-print-cond-node-test)
 
 (defun js3-bfy-visit-cond-node (n v)
   (js3-bfy-visit-ast (js3-bfy-cond-node-test-expr n) v)
@@ -1140,6 +1311,14 @@ The type field will be js3-bfy-CONST for a const decl."
   (js3-bfy-print-ast (js3-bfy-cond-node-true-expr n) 0)
   (js3-bfy-print " : ")
   (js3-bfy-print-ast (js3-bfy-cond-node-false-expr n) 0))
+
+(defun js3-bfy-print-cond-node-test (n i)
+  (concat
+   (js3-bfy-print-ast-test (js3-bfy-cond-node-test-expr n) 0)
+   (js3-bfy-print-test " ? ")
+   (js3-bfy-print-ast-test (js3-bfy-cond-node-true-expr n) 0)
+   (js3-bfy-print-test " : ")
+   (js3-bfy-print-ast-test (js3-bfy-cond-node-false-expr n) 0)))
 
 (defstruct (js3-bfy-infix-node
             (:include js3-bfy-node)
@@ -1160,6 +1339,7 @@ The type field inherited from `js3-bfy-node' holds the operator."
 
 (put 'cl-struct-js3-bfy-infix-node 'js3-bfy-visitor 'js3-bfy-visit-infix-node)
 (put 'cl-struct-js3-bfy-infix-node 'js3-bfy-printer 'js3-bfy-print-infix-node)
+(put 'cl-struct-js3-bfy-infix-node 'js3-bfy-printer-test 'js3-bfy-print-infix-node-test)
 
 (defun js3-bfy-visit-infix-node (n v)
   (js3-bfy-visit-ast (js3-bfy-infix-node-left n) v)
@@ -1221,20 +1401,14 @@ The type field inherited from `js3-bfy-node' holds the operator."
   (if (or (not (or js3-bfy-compact js3-bfy-compact-infix))
 	  js3-bfy-multiln)
       (js3-bfy-print-infix-node-long args delimiter)
-    (let ((oldstr js3-bfy-curstr))
-      (js3-bfy-print-infix-node-compact args delimiter)
-      (when (and (not (string= js3-bfy-curstr oldstr))
-		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		     (let ((c (compare-strings js3-bfy-curstr 0 nil
-					       oldstr 0 nil))
-			   (diffstr))
-		       (setq diffstr (substring js3-bfy-curstr c))
-		       (string-match "\n" diffstr))))
-	(setq js3-bfy-curstr oldstr)
-	(js3-bfy-print "")
-	(setq js3-bfy-multiln t)
-	(js3-bfy-print-infix-node-long args delimiter)
-	(setq js3-bfy-multiln nil)))))
+    (let ((temp (js3-bfy-print-infix-node-test args delimiter)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n" temp))
+	  (progn
+	    (setq js3-bfy-multiln t)
+	    (js3-bfy-print-infix-node-long args delimiter)
+	    (setq js3-bfy-multiln nil))
+	(js3-bfy-print-infix-node-compact args delimiter)))))
 
 (defun js3-bfy-print-infix-node-long (n i)
   (let* ((tt (js3-bfy-node-type n))
@@ -1271,6 +1445,19 @@ The type field inherited from `js3-bfy-node' holds the operator."
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-infix-node-right n) 0)))
 
+(defun js3-bfy-print-infix-node-test (n i)
+  (let* ((tt (js3-bfy-node-type n))
+         (op (gethash tt js3-bfy-operator-tokens)))
+    (unless op
+      (error "unrecognized infix operator %s" (js3-bfy-node-type n)))
+    (concat
+     (js3-bfy-print-ast-test (js3-bfy-infix-node-left n) 0)
+     (unless (= tt js3-bfy-COMMA)
+       (js3-bfy-print-test " "))
+     (js3-bfy-print-test op)
+     (js3-bfy-print-test " ")
+     (js3-bfy-print-ast-test (js3-bfy-infix-node-right n) 0))))
+
 (defstruct (js3-bfy-assign-node
             (:include js3-bfy-infix-node)
             (:constructor nil)
@@ -1286,6 +1473,7 @@ The type field holds the actual assignment operator.")
 
 (put 'cl-struct-js3-bfy-assign-node 'js3-bfy-visitor 'js3-bfy-visit-infix-node)
 (put 'cl-struct-js3-bfy-assign-node 'js3-bfy-printer 'js3-bfy-print-infix-node)
+(put 'cl-struct-js3-bfy-assign-node 'js3-bfy-printer-test 'js3-bfy-print-infix-node-test)
 
 (defstruct (js3-bfy-unary-node
             (:include js3-bfy-node)
@@ -1303,6 +1491,7 @@ property is added if the operator follows the operand."
 
 (put 'cl-struct-js3-bfy-unary-node 'js3-bfy-visitor 'js3-bfy-visit-unary-node)
 (put 'cl-struct-js3-bfy-unary-node 'js3-bfy-printer 'js3-bfy-print-unary-node)
+(put 'cl-struct-js3-bfy-unary-node 'js3-bfy-printer-test 'js3-bfy-print-unary-node-test)
 
 (defun js3-bfy-visit-unary-node (n v)
   (js3-bfy-visit-ast (js3-bfy-unary-node-operand n) v))
@@ -1321,6 +1510,22 @@ property is added if the operator follows the operand."
     (js3-bfy-print-ast (js3-bfy-unary-node-operand n) 0)
     (when postfix
       (js3-bfy-print op))))
+
+(defun js3-bfy-print-unary-node-test (n i)
+  (let* ((tt (js3-bfy-node-type n))
+         (op (gethash tt js3-bfy-operator-tokens))
+         (postfix (js3-bfy-node-get-prop n 'postfix)))
+    (unless op
+      (error "unrecognized unary operator %s" tt))
+    (concat
+     (unless postfix
+       (js3-bfy-print-test op))
+     (if (or (= tt js3-bfy-TYPEOF)
+	     (= tt js3-bfy-DELPROP))
+	 (js3-bfy-print-test " "))
+     (js3-bfy-print-ast-test (js3-bfy-unary-node-operand n) 0)
+     (when postfix
+       (js3-bfy-print-test op)))))
 
 (defstruct (js3-bfy-let-node
             (:include js3-bfy-scope)
@@ -1342,6 +1547,7 @@ Note that a let declaration such as let x=6, y=7 is a `js3-bfy-var-decl-node'."
 
 (put 'cl-struct-js3-bfy-let-node 'js3-bfy-visitor 'js3-bfy-visit-let-node)
 (put 'cl-struct-js3-bfy-let-node 'js3-bfy-printer 'js3-bfy-print-let-node)
+(put 'cl-struct-js3-bfy-let-node 'js3-bfy-printer-test 'js3-bfy-print-let-node-test)
 
 (defun js3-bfy-visit-let-node (n v)
   (js3-bfy-visit-ast (js3-bfy-let-node-vars n) v)
@@ -1352,6 +1558,13 @@ Note that a let declaration such as let x=6, y=7 is a `js3-bfy-var-decl-node'."
   (js3-bfy-print-ast (js3-bfy-let-node-vars n) 0)
   (js3-bfy-print ") ")
   (js3-bfy-print-ast (js3-bfy-let-node-body n) i))
+
+(defun js3-bfy-print-let-node-test (n i)
+  (concat
+   (js3-bfy-print-test "let (")
+   (js3-bfy-print-ast-test (js3-bfy-let-node-vars n) 0)
+   (js3-bfy-print-test ") ")
+   (js3-bfy-print-ast-test (js3-bfy-let-node-body n) i)))
 
 (defstruct (js3-bfy-keyword-node
             (:include js3-bfy-node)
@@ -1366,9 +1579,21 @@ The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
 
 (put 'cl-struct-js3-bfy-keyword-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-keyword-node 'js3-bfy-printer 'js3-bfy-print-keyword-node)
+(put 'cl-struct-js3-bfy-keyword-node 'js3-bfy-printer-test 'js3-bfy-print-keyword-node-test)
 
 (defun js3-bfy-print-keyword-node (n i)
   (js3-bfy-print
+   (let ((tt (js3-bfy-node-type n)))
+     (cond
+      ((= tt js3-bfy-THIS) "this")
+      ((= tt js3-bfy-NULL) "null")
+      ((= tt js3-bfy-TRUE) "true")
+      ((= tt js3-bfy-FALSE) "false")
+      ((= tt js3-bfy-DEBUGGER) "debugger")
+      (t (error "Invalid keyword literal type: %d" tt))))))
+
+(defun js3-bfy-print-keyword-node-test (n i)
+  (js3-bfy-print-test
    (let ((tt (js3-bfy-node-type n)))
      (cond
       ((= tt js3-bfy-THIS) "this")
@@ -1403,6 +1628,7 @@ The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
 
 (put 'cl-struct-js3-bfy-new-node 'js3-bfy-visitor 'js3-bfy-visit-new-node)
 (put 'cl-struct-js3-bfy-new-node 'js3-bfy-printer 'js3-bfy-print-new-node)
+(put 'cl-struct-js3-bfy-new-node 'js3-bfy-printer-test 'js3-bfy-print-new-node-test)
 
 (defun js3-bfy-visit-new-node (n v)
   (js3-bfy-visit-ast (js3-bfy-new-node-target n) v)
@@ -1420,6 +1646,18 @@ The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-new-node-initializer n))))
 
+(defun js3-bfy-print-new-node-test (n i)
+  (concat
+   (js3-bfy-print-test "new ")
+   (js3-bfy-print-ast-test (js3-bfy-new-node-target n))
+   (js3-bfy-print-test "(")
+   (js3-bfy-print-list-test (js3-bfy-new-node-args n))
+   (js3-bfy-print-test ")")
+   (when (js3-bfy-new-node-initializer n)
+     (concat
+      (js3-bfy-print-test " ")
+      (js3-bfy-print-ast-test (js3-bfy-new-node-initializer n))))))
+
 (defstruct (js3-bfy-name-node
             (:include js3-bfy-node)
             (:constructor nil)
@@ -1435,9 +1673,13 @@ The node type is set to js3-bfy-NULL, js3-bfy-THIS, etc.")
 
 (put 'cl-struct-js3-bfy-name-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-name-node 'js3-bfy-printer 'js3-bfy-print-name-node)
+(put 'cl-struct-js3-bfy-name-node 'js3-bfy-printer-test 'js3-bfy-print-name-node-test)
 
 (defun js3-bfy-print-name-node (n i)
   (js3-bfy-print (js3-bfy-name-node-name n)))
+
+(defun js3-bfy-print-name-node-test (n i)
+  (js3-bfy-print-test (js3-bfy-name-node-name n)))
 
 (defsubst js3-bfy-name-node-length (node)
   "Return identifier length of NODE, a `js3-bfy-name-node'.
@@ -1462,9 +1704,14 @@ Returns 0 if NODE is nil or its identifier field is nil."
 
 (put 'cl-struct-js3-bfy-number-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-number-node 'js3-bfy-printer 'js3-bfy-print-number-node)
+(put 'cl-struct-js3-bfy-number-node 'js3-bfy-printer-test 'js3-bfy-print-number-node-test)
 
 (defun js3-bfy-print-number-node (n i)
   (js3-bfy-print
+   (number-to-string (js3-bfy-number-node-num-value n))))
+
+(defun js3-bfy-print-number-node-test (n i)
+  (js3-bfy-print-test
    (number-to-string (js3-bfy-number-node-num-value n))))
 
 (defstruct (js3-bfy-regexp-node
@@ -1483,6 +1730,7 @@ Returns 0 if NODE is nil or its identifier field is nil."
 
 (put 'cl-struct-js3-bfy-regexp-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-regexp-node 'js3-bfy-printer 'js3-bfy-print-regexp)
+(put 'cl-struct-js3-bfy-regexp-node 'js3-bfy-printer-test 'js3-bfy-print-regexp-test)
 
 (defun js3-bfy-print-regexp (n i)
   (js3-bfy-print
@@ -1492,6 +1740,16 @@ Returns 0 if NODE is nil or its identifier field is nil."
     "/"))
   (if (js3-bfy-regexp-node-flags n)
       (js3-bfy-print (js3-bfy-regexp-node-flags n))))
+
+(defun js3-bfy-print-regexp-test (n i)
+  (concat
+   (js3-bfy-print-test
+    (concat
+     "/"
+     (js3-bfy-regexp-node-value n)
+     "/"))
+   (if (js3-bfy-regexp-node-flags n)
+       (js3-bfy-print-test (js3-bfy-regexp-node-flags n)))))
 
 (defstruct (js3-bfy-string-node
             (:include js3-bfy-node)
@@ -1509,9 +1767,13 @@ You can tell the quote type by looking at the first character."
 
 (put 'cl-struct-js3-bfy-string-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-string-node 'js3-bfy-printer 'js3-bfy-print-string-node)
+(put 'cl-struct-js3-bfy-string-node 'js3-bfy-printer-test 'js3-bfy-print-string-node-test)
 
 (defun js3-bfy-print-string-node (n i)
   (js3-bfy-print (js3-bfy-node-string n)))
+
+(defun js3-bfy-print-string-node-test (n i)
+  (js3-bfy-print-test (js3-bfy-node-string n)))
 
 (defstruct (js3-bfy-array-node
             (:include js3-bfy-node)
@@ -1526,6 +1788,7 @@ You can tell the quote type by looking at the first character."
 
 (put 'cl-struct-js3-bfy-array-node 'js3-bfy-visitor 'js3-bfy-visit-array-node)
 (put 'cl-struct-js3-bfy-array-node 'js3-bfy-printer 'js3-bfy-print-array-node)
+(put 'cl-struct-js3-bfy-array-node 'js3-bfy-printer-test 'js3-bfy-print-array-node-test)
 
 (defun js3-bfy-visit-array-node (n v)
   (dolist (e (js3-bfy-array-node-elems n))
@@ -1535,6 +1798,12 @@ You can tell the quote type by looking at the first character."
   (js3-bfy-print "[")
   (js3-bfy-print-list (js3-bfy-array-node-elems n))
   (js3-bfy-print "]"))
+
+(defun js3-bfy-print-array-node-test (n i)
+  (concat
+   (js3-bfy-print-test "[")
+   (js3-bfy-print-list-test (js3-bfy-array-node-elems n))
+   (js3-bfy-print-test "]")))
 
 (defstruct (js3-bfy-object-node
             (:include js3-bfy-node)
@@ -1549,6 +1818,7 @@ You can tell the quote type by looking at the first character."
 
 (put 'cl-struct-js3-bfy-object-node 'js3-bfy-visitor 'js3-bfy-visit-object-node)
 (put 'cl-struct-js3-bfy-object-node 'js3-bfy-printer 'js3-bfy-print-object-node)
+(put 'cl-struct-js3-bfy-object-node 'js3-bfy-printer-test 'js3-bfy-print-object-node-test)
 
 (defun js3-bfy-visit-object-node (n v)
   (dolist (e (js3-bfy-object-node-elems n))
@@ -1558,6 +1828,12 @@ You can tell the quote type by looking at the first character."
   (js3-bfy-print "{")
   (js3-bfy-print-list (js3-bfy-object-node-elems n))
   (js3-bfy-print "}"))
+
+(defun js3-bfy-print-object-node-test (n i)
+  (concat
+   (js3-bfy-print-test "{")
+   (js3-bfy-print-list-test (js3-bfy-object-node-elems n))
+   (js3-bfy-print-test "}")))
 
 (defstruct (js3-bfy-object-prop-node
             (:include js3-bfy-infix-node)
@@ -1575,11 +1851,18 @@ The `right' field is a `js3-bfy-node' representing the initializer value.")
 
 (put 'cl-struct-js3-bfy-object-prop-node 'js3-bfy-visitor 'js3-bfy-visit-infix-node)
 (put 'cl-struct-js3-bfy-object-prop-node 'js3-bfy-printer 'js3-bfy-print-object-prop-node)
+(put 'cl-struct-js3-bfy-object-prop-node 'js3-bfy-printer-test 'js3-bfy-print-object-prop-node-test)
 
 (defun js3-bfy-print-object-prop-node (n i)
   (js3-bfy-print-ast (js3-bfy-object-prop-node-left n) 0)
   (js3-bfy-print ": ")
   (js3-bfy-print-ast (js3-bfy-object-prop-node-right n) 0))
+
+(defun js3-bfy-print-object-prop-node-test (n i)
+  (concat
+   (js3-bfy-print-ast-test (js3-bfy-object-prop-node-left n) 0)
+   (js3-bfy-print-test ": ")
+   (js3-bfy-print-ast-test (js3-bfy-object-prop-node-right n) 0)))
 
 (defstruct (js3-bfy-getter-setter-node
             (:include js3-bfy-infix-node)
@@ -1597,11 +1880,18 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 
 (put 'cl-struct-js3-bfy-getter-setter-node 'js3-bfy-visitor 'js3-bfy-visit-infix-node)
 (put 'cl-struct-js3-bfy-getter-setter-node 'js3-bfy-printer 'js3-bfy-print-getter-setter)
+(put 'cl-struct-js3-bfy-getter-setter-node 'js3-bfy-printer-test 'js3-bfy-print-getter-setter-test)
 
 (defun js3-bfy-print-getter-setter (n i)
   (js3-bfy-print (if (= (js3-bfy-node-type n) js3-bfy-GET) "get " "set "))
   (js3-bfy-print-ast (js3-bfy-getter-setter-node-left n) 0)
   (js3-bfy-print-ast (js3-bfy-getter-setter-node-right n) 0))
+
+(defun js3-bfy-print-getter-setter-test (n i)
+  (concat
+   (js3-bfy-print-test (if (= (js3-bfy-node-type n) js3-bfy-GET) "get " "set "))
+   (js3-bfy-print-ast-test (js3-bfy-getter-setter-node-left n) 0)
+   (js3-bfy-print-ast-test (js3-bfy-getter-setter-node-right n) 0)))
 
 (defstruct (js3-bfy-prop-get-node
             (:include js3-bfy-infix-node)
@@ -1616,6 +1906,7 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 
 (put 'cl-struct-js3-bfy-prop-get-node 'js3-bfy-visitor 'js3-bfy-visit-prop-get-node)
 (put 'cl-struct-js3-bfy-prop-get-node 'js3-bfy-printer 'js3-bfy-print-prop-get-node)
+(put 'cl-struct-js3-bfy-prop-get-node 'js3-bfy-printer-test 'js3-bfy-print-prop-get-node-test)
 
 (defun js3-bfy-visit-prop-get-node (n v)
   (js3-bfy-visit-ast (js3-bfy-prop-get-node-left n) v)
@@ -1625,6 +1916,12 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
   (js3-bfy-print-ast (js3-bfy-prop-get-node-left n) 0)
   (js3-bfy-print ".")
   (js3-bfy-print-ast (js3-bfy-prop-get-node-right n) 0))
+
+(defun js3-bfy-print-prop-get-node-test (n i)
+  (concat
+   (js3-bfy-print-ast-test (js3-bfy-prop-get-node-left n) 0)
+   (js3-bfy-print-test ".")
+   (js3-bfy-print-ast-test (js3-bfy-prop-get-node-right n) 0)))
 
 (defstruct (js3-bfy-elem-get-node
             (:include js3-bfy-node)
@@ -1645,6 +1942,7 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 
 (put 'cl-struct-js3-bfy-elem-get-node 'js3-bfy-visitor 'js3-bfy-visit-elem-get-node)
 (put 'cl-struct-js3-bfy-elem-get-node 'js3-bfy-printer 'js3-bfy-print-elem-get-node)
+(put 'cl-struct-js3-bfy-elem-get-node 'js3-bfy-printer-test 'js3-bfy-print-elem-get-node-test)
 
 (defun js3-bfy-visit-elem-get-node (n v)
   (when (js3-bfy-elem-get-node-target n)
@@ -1657,6 +1955,13 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
   (js3-bfy-print "[")
   (js3-bfy-print-ast (js3-bfy-elem-get-node-element n) 0)
   (js3-bfy-print "]"))
+
+(defun js3-bfy-print-elem-get-node-test (n i)
+  (concat
+   (js3-bfy-print-ast-test (js3-bfy-elem-get-node-target n) 0)
+   (js3-bfy-print-test "[")
+   (js3-bfy-print-ast-test (js3-bfy-elem-get-node-element n) 0)
+   (js3-bfy-print-test "]")))
 
 (defstruct (js3-bfy-call-node
             (:include js3-bfy-node)
@@ -1677,6 +1982,7 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 
 (put 'cl-struct-js3-bfy-call-node 'js3-bfy-visitor 'js3-bfy-visit-call-node)
 (put 'cl-struct-js3-bfy-call-node 'js3-bfy-printer 'js3-bfy-print-call-node)
+(put 'cl-struct-js3-bfy-call-node 'js3-bfy-printer-test 'js3-bfy-print-call-node-test)
 
 (defun js3-bfy-visit-call-node (n v)
   (js3-bfy-visit-ast (js3-bfy-call-node-target n) v)
@@ -1688,6 +1994,13 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
   (js3-bfy-print "(")
   (js3-bfy-print-list (js3-bfy-call-node-args n))
   (js3-bfy-print ")"))
+
+(defun js3-bfy-print-call-node-test (n i)
+  (concat
+   (js3-bfy-print-ast-test (js3-bfy-call-node-target n) 0)
+   (js3-bfy-print-test "(")
+   (js3-bfy-print-list-test (js3-bfy-call-node-args n))
+   (js3-bfy-print-test ")")))
 
 (defstruct (js3-bfy-yield-node
             (:include js3-bfy-node)
@@ -1702,6 +2015,7 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
 
 (put 'cl-struct-js3-bfy-yield-node 'js3-bfy-visitor 'js3-bfy-visit-yield-node)
 (put 'cl-struct-js3-bfy-yield-node 'js3-bfy-printer 'js3-bfy-print-yield-node)
+(put 'cl-struct-js3-bfy-yield-node 'js3-bfy-printer-test 'js3-bfy-print-yield-node-test)
 
 (defun js3-bfy-visit-yield-node (n v)
   (js3-bfy-visit-ast (js3-bfy-yield-node-value n) v))
@@ -1711,6 +2025,14 @@ property `GETTER_SETTER' set to js3-bfy-GET or js3-bfy-SET. ")
   (when (js3-bfy-yield-node-value n)
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-yield-node-value n) 0)))
+
+(defun js3-bfy-print-yield-node-test (n i)
+  (concat
+   (js3-bfy-print-test "yield")
+   (when (js3-bfy-yield-node-value n)
+     (concat
+      (js3-bfy-print-test " ")
+      (js3-bfy-print-ast-test (js3-bfy-yield-node-value n) 0)))))
 
 (defstruct (js3-bfy-paren-node
             (:include js3-bfy-node)
@@ -1727,6 +2049,7 @@ as opposed to required parens such as those enclosing an if-conditional."
 
 (put 'cl-struct-js3-bfy-paren-node 'js3-bfy-visitor 'js3-bfy-visit-paren-node)
 (put 'cl-struct-js3-bfy-paren-node 'js3-bfy-printer 'js3-bfy-print-paren-node)
+(put 'cl-struct-js3-bfy-paren-node 'js3-bfy-printer-test 'js3-bfy-print-paren-node-test)
 
 (defun js3-bfy-visit-paren-node (n v)
   (js3-bfy-visit-ast (js3-bfy-paren-node-expr n) v))
@@ -1736,25 +2059,29 @@ as opposed to required parens such as those enclosing an if-conditional."
   (js3-bfy-print-expr (js3-bfy-paren-node-expr n) 0)
   (js3-bfy-print ")"))
 
+(defun js3-bfy-print-paren-node-test (n i)
+  (concat
+   (js3-bfy-print-test "(")
+   (js3-bfy-print-expr-test (js3-bfy-paren-node-expr n) 0)
+   (js3-bfy-print-test ")")))
+
 (defun js3-bfy-print-expr (n i)
   (if (not (or js3-bfy-compact js3-bfy-compact-expr))
       (js3-bfy-print-ast n i)
-    (let ((oldstr js3-bfy-curstr))
-      (js3-bfy-print-expr-compact n i)
-      (when (and (not (string= js3-bfy-curstr oldstr))
-		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		     (let ((c (compare-strings js3-bfy-curstr 0 nil
-					       oldstr 0 nil))
-			   (diffstr))
-		       (setq diffstr (substring js3-bfy-curstr c))
-		       (string-match "\n" diffstr))))
-	(setq js3-bfy-curstr oldstr)
-	(js3-bfy-print " ")
-	(js3-bfy-print-ast n i)
-	(js3-bfy-print "\n")))))
+    (let ((temp (js3-bfy-print-expr-test n i)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n" temp))
+	  (progn
+	    (js3-bfy-print " ")
+	    (js3-bfy-print-ast n i)
+	    (js3-bfy-print "\n"))
+	(js3-bfy-print-expr-compact n i)))))
 
 (defun js3-bfy-print-expr-compact (n i)
   (js3-bfy-print-ast n i))
+
+(defun js3-bfy-print-expr-test (n i)
+  (js3-bfy-print-ast-test n i))
 
 (defstruct (js3-bfy-array-comp-node
             (:include js3-bfy-scope)
@@ -1779,6 +2106,7 @@ as opposed to required parens such as those enclosing an if-conditional."
 
 (put 'cl-struct-js3-bfy-array-comp-node 'js3-bfy-visitor 'js3-bfy-visit-array-comp-node)
 (put 'cl-struct-js3-bfy-array-comp-node 'js3-bfy-printer 'js3-bfy-print-array-comp-node)
+(put 'cl-struct-js3-bfy-array-comp-node 'js3-bfy-printer-test 'js3-bfy-print-array-comp-node-test)
 
 (defun js3-bfy-visit-array-comp-node (n v)
   (js3-bfy-visit-ast (js3-bfy-array-comp-node-result n) v)
@@ -1796,6 +2124,24 @@ as opposed to required parens such as those enclosing an if-conditional."
     (js3-bfy-print " if (")
     (js3-bfy-print-ast (js3-bfy-array-comp-node-filter n) 0))
   (js3-bfy-print ")]"))
+
+(defun js3-bfy-print-array-comp-node-test (n i)
+  (concat
+   (js3-bfy-print-test "[")
+   (js3-bfy-print-ast-test (js3-bfy-array-comp-node-result n) 0)
+   (let ((temp ""))
+     (dolist (l (js3-bfy-array-comp-node-loops n))
+       (setq temp
+	     (concat
+	      temp
+	      (js3-bfy-print-test " ")
+	      (js3-bfy-print-ast-test l 0))))
+     temp)
+  (when (js3-bfy-array-comp-node-filter n)
+    (concat
+     (js3-bfy-print-test " if (")
+     (js3-bfy-print-ast-test (js3-bfy-array-comp-node-filter n) 0)))
+  (js3-bfy-print-test ")]")))
 
 (defstruct (js3-bfy-array-comp-loop-node
             (:include js3-bfy-for-in-node)
@@ -1815,6 +2161,7 @@ as opposed to required parens such as those enclosing an if-conditional."
 
 (put 'cl-struct-js3-bfy-array-comp-loop-node 'js3-bfy-visitor 'js3-bfy-visit-array-comp-loop)
 (put 'cl-struct-js3-bfy-array-comp-loop-node 'js3-bfy-printer 'js3-bfy-print-array-comp-loop)
+(put 'cl-struct-js3-bfy-array-comp-loop-node 'js3-bfy-printer-test 'js3-bfy-print-array-comp-loop-test)
 
 (defun js3-bfy-visit-array-comp-loop (n v)
   (js3-bfy-visit-ast (js3-bfy-array-comp-loop-node-iterator n) v)
@@ -1827,6 +2174,14 @@ as opposed to required parens such as those enclosing an if-conditional."
   (js3-bfy-print-ast (js3-bfy-array-comp-loop-node-object n) 0)
   (js3-bfy-print ")"))
 
+(defun js3-bfy-print-array-comp-loop-test (n i)
+  (concat
+   (js3-bfy-print-test "for (")
+   (js3-bfy-print-ast-test (js3-bfy-array-comp-loop-node-iterator n) 0)
+   (js3-bfy-print-test " in ")
+   (js3-bfy-print-ast-test (js3-bfy-array-comp-loop-node-object n) 0)
+   (js3-bfy-print-test ")")))
+
 (defstruct (js3-bfy-empty-expr-node
             (:include js3-bfy-node)
             (:constructor nil)
@@ -1838,6 +2193,7 @@ as opposed to required parens such as those enclosing an if-conditional."
 
 (put 'cl-struct-js3-bfy-empty-expr-node 'js3-bfy-visitor 'js3-bfy-visit-none)
 (put 'cl-struct-js3-bfy-empty-expr-node 'js3-bfy-printer 'js3-bfy-print-none)
+(put 'cl-struct-js3-bfy-empty-expr-node 'js3-bfy-printer-test 'js3-bfy-print-none-test)
 
 ;;; Node utilities
 
@@ -2318,6 +2674,9 @@ If NODE is the ast-root, returns nil."
 (defun js3-bfy-print-none (node indent)
   "Visitor for AST node with no printed representation.")
 
+(defun js3-bfy-print-none-test (node indent)
+  "")
+
 (defun js3-bfy-print-body (node indent)
   "Print a statement, or a block without braces."
   (if (js3-bfy-block-node-p node)
@@ -2325,21 +2684,23 @@ If NODE is the ast-root, returns nil."
         (js3-bfy-print-ast kid indent))
     (js3-bfy-print-ast node indent)))
 
+(defun js3-bfy-print-body-test (node indent)
+  "Print a statement, or a block without braces."
+  (if (js3-bfy-block-node-p node)
+      (let ((temp ""))
+	(dolist (kid (js3-bfy-block-node-kids node))
+	  (setq temp (concat temp (js3-bfy-print-ast-test kid indent))))
+	temp)
+    (js3-bfy-print-ast-test node indent)))
+
 (defun js3-bfy-print-list (args &optional delimiter)
   (if (not (or js3-bfy-compact js3-bfy-compact-list))
       (js3-bfy-print-list-long args delimiter)
-    (let ((oldstr js3-bfy-curstr))
-      (js3-bfy-print-list-compact args delimiter)
-      (when (and (not (string= js3-bfy-curstr oldstr))
-		 (or (> (length js3-bfy-curln) js3-bfy-max-columns)
-		     (let ((c (compare-strings js3-bfy-curstr 0 nil
-					       oldstr 0 nil))
-			   (diffstr))
-		       (setq diffstr (substring js3-bfy-curstr c))
-		       (string-match "\n" diffstr))))
-	(setq js3-bfy-curstr oldstr)
-	(js3-bfy-print "")
-	(js3-bfy-print-list-long args delimiter)))))
+    (let ((temp (js3-bfy-print-list-test args delimiter)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n" temp))
+	  (js3-bfy-print-list-long args delimiter)
+	(js3-bfy-print-list-compact args delimiter)))))
 
 (defun js3-bfy-print-list-long (args &optional delimiter)
   (loop with len = (length args)
@@ -2367,8 +2728,25 @@ If NODE is the ast-root, returns nil."
 	  (when (> len 1)
 	    (js3-bfy-print "")))))
 
+(defun js3-bfy-print-list-test (args &optional delimiter)
+  (let ((temp ""))
+    (loop with len = (length args)
+	  for arg in args
+	  for count from 1
+	  do
+	  (setq temp
+		(concat
+		 (if (and (= count 1) (> len 1))
+		     (js3-bfy-print-test ""))
+		 (js3-bfy-print-ast-test arg 0)
+		 (if (< count len)
+		     (js3-bfy-print-test (or delimiter ", "))
+		   (when (> len 1)
+		     (js3-bfy-print-test ""))))))
+    temp))
+
 (defun js3-bfy-print-tree (ast)
-  "Prints an AST to js3-bfy-curstr.
+  "Prints an AST to the temp buffer.
 Makes `js3-bfy-ast-parent-nodes' available to the printer functions."
   (let ((max-lisp-eval-depth (max max-lisp-eval-depth 1500)))
     (set-buffer (get-buffer-create js3-bfy-temp-buffer))
@@ -2382,6 +2760,17 @@ Makes `js3-bfy-ast-parent-nodes' available to the printer functions."
 Requires `js3-bfy-ast-parent-nodes' to be non-nil.
 You should use `js3-bfy-print-tree' instead of this function."
   (let ((printer (get (aref node 0) 'js3-bfy-printer))
+        (i (or indent 0))
+        (pos (js3-bfy-node-abs-pos node)))
+    ;; TODO:  wedge comments in here somewhere
+    (if printer
+        (funcall printer node i))))
+
+(defun js3-bfy-print-ast-test (node &optional indent)
+  "Helper function for printing AST nodes.
+Requires `js3-bfy-ast-parent-nodes' to be non-nil.
+You should use `js3-bfy-print-tree' instead of this function."
+  (let ((printer (get (aref node 0) 'js3-bfy-printer-test))
         (i (or indent 0))
         (pos (js3-bfy-node-abs-pos node)))
     ;; TODO:  wedge comments in here somewhere
@@ -2824,14 +3213,13 @@ nor always false."
       nil))))
 
 (defun js3-bfy-print (str)
-  "Update curstr with the value of str."
-  (setq js3-bfy-curstr (concat js3-bfy-curstr str))
-  (if (string-match "\n\\(.*\\)\\'" js3-bfy-curstr)
-      (setq js3-bfy-curln (match-string 1 js3-bfy-curstr))
-    (setq js3-bfy-curln js3-bfy-curstr))
+  "print the string"
   (set-buffer (get-buffer-create js3-bfy-temp-buffer))
   (insert str)
   (set-buffer js3-bfy-current-buffer))
+
+(defun js3-bfy-print-test (str)
+  str)
 
 (provide 'js3-bfy-ast)
 

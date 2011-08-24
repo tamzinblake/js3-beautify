@@ -55,6 +55,7 @@
       (set-buffer js3-bfy-current-buffer)
       (erase-buffer)
       (insert-buffer-substring (get-buffer-create js3-bfy-temp-buffer) min max))
+    (kill-buffer js3-bfy-temp-buffer)
     (delete-trailing-whitespace)
     (js3-bfy-reparse)
     (goto-char (point-min))
@@ -73,7 +74,6 @@
     (error "js3-beautify requires GNU Emacs version 21 or higher")))
 
 (defun js3-bfy-exit ()
-  (setq js3-bfy-curstr "")
   (setq js3-bfy-ast nil))
 
 (defun js3-bfy-before-save ()
