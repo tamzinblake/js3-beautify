@@ -15,9 +15,9 @@ var magicWords = ["abracadabra", "gesundheit", "ventrilo"]
 function myThing (args, cb) {
   getData( args
          , function (er, data) {
-           if (er) return log.er(cb, "Couldn't get data")(er)
-           return doSomethingElse(data, cb)
-         }
+             if (er) return log.er(cb, "Couldn't get data")(er)
+             return doSomethingElse(data, cb)
+           }
          )
 }
 
