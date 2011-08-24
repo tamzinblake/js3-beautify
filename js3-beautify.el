@@ -8415,292 +8415,190 @@ nil."
          (list (cons 'c js3-bfy-comment-lineup-func))))
     (c-get-syntactic-indentation (list (cons symbol anchor)))))
 
+(defun js3-bfy-back-offset (abs offset)
+  "Helper function for `js3-bfy-proper-indentation'."
+  (goto-char abs)
+  (while (= (preceding-char) ?\ )
+    (backward-char))
+  (backward-char offset)
+  (current-column))
+
+(defun js3-bfy-back-offset-re (abs re)
+  "Helper function for `js3-bfy-proper-indentation'."
+  (goto-char abs)
+  (js3-bfy-re-search-forward re nil t)
+  (backward-char)
+  (current-column))
+
 (defun js3-bfy-proper-indentation (parse-status)
   "Return the proper indentation for the current line."
   (save-excursion
     (back-to-indentation)
-    (cond
+    (let ((node (js3-bfy-node-at-point)))
+      (if (not node)
+	  0
+	(let ((char (following-char))
+	      (abs (js3-bfy-node-abs node))
+	      (type (js3-bfy-node-type node)))
+	  (cond
 
-     ;;inside a comment - indent like c
-     ((nth 4 parse-status)
-      (js3-bfy-get-c-offset 'c (nth 8 parse-status)))
+	   ;;inside a multi-line comment
+	   ((nth 4 parse-status)
+	    (cond
+	     ((= (char-after) ?*)
+	      (goto-char abs)
+	      (1+ (current-column)))
+	     (t
+	      (goto-char abs)
+	      (if (not (looking-at "/\\*\\s-*\\S-"))
+		  (current-column)
+		(forward-char 2)
+		(re-search-forward "\\S-" nil t)
+		(1- (current-column))))))
 
-     ;;inside a string - indent to 0 since you can't do that.
-     ((nth 8 parse-status) 0)
+	   ;;inside a string - indent to 0 since you can't do that.
+	   ((nth 8 parse-status) 0)
 
-     ;;comma-first and operator-first
-     ((or
-       (= (following-char) ?\,)
-       (looking-at js3-bfy-indent-operator-first-re))
-      (let ((node (js3-bfy-node-at-point))
-	    (char (following-char)))
-	(let ((spos
-	       (save-excursion
-		 (cond
+	   ;;comma-first and operator-first
+	   ((or
+	     (= (following-char) ?\,)
+	     (looking-at js3-bfy-indent-operator-first-re))
+	    (cond
+	     ;;bare statements
+	     ((= type js3-bfy-VAR)
+	      (goto-char abs)
+	      (+ (current-column) 2))
+	     ((= type js3-bfy-RETURN)
+	      (goto-char abs)
+	      (+ (current-column) 5))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-VAR (js3-bfy-node-type node))) ; var node
-		   (goto-char (js3-bfy-node-abs node))
-		   (+ (current-column) 2))
+	     ;;lists
+	     ((= type js3-bfy-ARRAYLIT)
+	      (js3-bfy-back-offset-re abs "[[]"))
+	     ((= type js3-bfy-OBJECTLIT)
+	      (js3-bfy-back-offset-re abs "{"))
+	     ((= type js3-bfy-FUNCTION)
+	      (js3-bfy-back-offset-re abs "("))
+	     ((= type js3-bfy-CALL)
+	      (js3-bfy-back-offset-re abs "("))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-RETURN (js3-bfy-node-type node)))
-		   (goto-char (js3-bfy-node-abs node))
-		   (+ (current-column) 5))
+	     ;;operators
+	     ((and (>= type 9)
+		   (<= type 18)) ; binary operators
+	      (js3-bfy-back-offset abs 1))
+	     ((= type js3-bfy-COMMA)
+	      (js3-bfy-back-offset abs 1))
+	     ((= type js3-bfy-ASSIGN)
+	      (js3-bfy-back-offset abs 1))
+	     ((= type js3-bfy-HOOK)
+	      (js3-bfy-back-offset abs 1))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-ARRAYLIT (js3-bfy-node-type node)))
-		   (goto-char (js3-bfy-node-abs node))
-		   (js3-bfy-re-search-forward "[[]" nil t)
-		   (backward-char)
-		   (current-column))
+	     ((= type js3-bfy-GETPROP) ; dot operator
+	      (goto-char abs)
+	      (if (js3-bfy-looking-at ".*\\..*")
+		  (progn (js3-bfy-re-search-forward "\\." nil t)
+			 (backward-char)
+			 (current-column))
+		(+ (current-column)
+		   js3-bfy-expr-indent-offset js3-bfy-indent-level)))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-OBJECTLIT (js3-bfy-node-type node)))
-		   (goto-char (js3-bfy-node-abs node))
-		   (js3-bfy-re-search-forward "{" nil t)
-		   (backward-char)
-		   (current-column))
+	     ;; multi-char operators
+	     ((and (>= type 19)
+		   (<= type 24)) ; 2-char binary operators
+	      (js3-bfy-back-offset abs 2))
+	     ((or (= type js3-bfy-URSH)
+		  (= type js3-bfy-SHEQ)
+		  (= type js3-bfy-SHNE)) ;3-char binary operators
+	      (js3-bfy-back-offset abs 3))
+	     ((and (>= type 103)
+		   (<= type 104)) ; logical and/or
+	      (js3-bfy-back-offset abs 2))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-FUNCTION (js3-bfy-node-type node)))
-		   (goto-char (js3-bfy-node-abs node))
-		   (js3-bfy-re-search-forward "(" nil t)
-		   (backward-char)
-		   (current-column))
+	     ;;multi-char assignment
+	     ((and (>= type 90)
+		   (<= type 97)) ; assignment 2-char
+	      (js3-bfy-back-offset abs 2))
+	     ((and (>= type 98)
+		   (<= type 99)) ; assignment 3-char
+	      (js3-bfy-back-offset abs 3))
+	     ((= type 100)       ; assignment 4-char
+	      (js3-bfy-back-offset abs 4))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-CALL (js3-bfy-node-type node)))
-		   (goto-char (js3-bfy-node-abs node))
-		   (js3-bfy-re-search-forward "(" nil t)
-		   (backward-char)
-		   (current-column))
+	     (t
+	      (goto-char abs)
+	      (+ (current-column) js3-bfy-indent-level
+		 js3-bfy-expr-indent-offset))))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (>= (js3-bfy-node-type node) 9)
-		    (<= (js3-bfy-node-type node) 18))    ; binary operators
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char)
-		   (current-column))
+	   ;;indent control statement body without braces, if applicable
+	   ((js3-bfy-ctrl-statement-indentation))
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-COMMA (js3-bfy-node-type node))) ; comma operator
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char)
-		   (current-column))
+	   ;;c preprocessor - indent to 0
+	   ((eq (char-after) ?#) 0)
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-GETPROP (js3-bfy-node-type node))) ; dot operator
-		   (goto-char (js3-bfy-node-abs node))
-		   (if (js3-bfy-looking-at ".*\\..*")
-		       (progn (js3-bfy-re-search-forward "\\." nil t)
-			      (backward-char)
-			      (current-column))
-		     (+ (current-column)
-			js3-bfy-expr-indent-offset js3-bfy-indent-level)))
+	   ;;we're in a cpp macro - indent to 4 why not
+	   ((save-excursion (js3-bfy-beginning-of-macro)) 4)
 
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (>= (js3-bfy-node-type node) 19)
-		    (<= (js3-bfy-node-type node) 24))    ; 2-char binary operators
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char 2)
-		   (current-column))
-
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= (js3-bfy-node-type node) 25))    ; 3-char binary operators
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char 3)
-		   (current-column))
-
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (>= (js3-bfy-node-type node) 103)
-		    (<= (js3-bfy-node-type node) 104))    ; logical and/or
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char 2)
-		   (current-column))
-
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= js3-bfy-ASSIGN (js3-bfy-node-type node))) ; assignment
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char)
-		   (current-column))
-
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (>= (js3-bfy-node-type node) 90)
-		    (<= (js3-bfy-node-type node) 97))    ; assignment 2-char
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char 2)
-		   (current-column))
-
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (>= (js3-bfy-node-type node) 98)
-		    (<= (js3-bfy-node-type node) 99))    ; assignment 3-char
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char 3)
-		   (current-column))
-
-		  ((and
-		    node
-		    (js3-bfy-node-type node)
-		    (= (js3-bfy-node-type node) 100))    ; assignment 4-char
-		   (goto-char (js3-bfy-node-abs node))
-		   (when (= (preceding-char) ?\ )
-		     (backward-char))
-		   (backward-char 4)
-		   (current-column))
-
-		  (t
-		   (js3-bfy-backward-clean)
-		   (cond
-		    ((js3-bfy-looking-back (concat "[,([{].*" js3-bfy-skip-newlines-re))
-		     (js3-bfy-re-search-backward (concat "[,([{].*"
-							 js3-bfy-skip-newlines-re)
-						 (point-min) t)
-		     (current-column))
-
-		    ((js3-bfy-looking-back (concat "\\<var\\>.*"
-						   js3-bfy-skip-newlines-re))
-		     (js3-bfy-re-search-backward (concat "\\<var\\>.*"
-							 js3-bfy-skip-newlines-re)
-						 (point-min) t)
-		     (+ (current-column) 2))
-
-		    ((js3-bfy-looking-back (concat "\\<return\\>.*"
-						   js3-bfy-skip-newlines-re))
-		     (js3-bfy-re-search-backward (concat "\\<return\\>.*"
-							 js3-bfy-skip-newlines-re)
-						 (point-min) t)
-		     (+ (current-column) 5))
-
-		    ((js3-bfy-looking-back (concat "[,([{]\\(.\\|\n\\)*"
-						   js3-bfy-skip-newlines-re))
-		     (js3-bfy-re-search-backward (concat "[,([{]\\(.\\|\n\\)*"
-							 js3-bfy-skip-newlines-re)
-						 (point-min) t)
-		     (current-column))
-
-		    (t
-		     nil)))))))
-	  (if spos
-	      spos
-	    (+ js3-bfy-indent-level js3-bfy-expr-indent-offset)))))
-
-     ;;indent control statement body without braces, if applicable
-     ((js3-bfy-ctrl-statement-indentation))
-
-     ;;c preprocessor - indent to 0
-     ((eq (char-after) ?#) 0)
-
-     ;;we're in a cpp macro - indent to 4 why not
-     ((save-excursion (js3-bfy-beginning-of-macro)) 4)
-
-     ;;inside a parenthetical grouping
-     ((nth 1 parse-status)
-      ;; A single closing paren/bracket should be indented at the
-      ;; same level as the opening statement.
-      (let ((same-indent-p (looking-at
-                            "[]})]"))
-            (continued-expr-p (js3-bfy-continued-expression-p)))
-        (goto-char (nth 1 parse-status)) ; go to the opening char
-        (if (looking-at "[({[]\\s-*\\(/[/*]\\|$\\)")
-            (progn ; nothing following the opening paren/bracket
-              (skip-syntax-backward " ")
-              (when (eq (char-before) ?\)) (backward-list)) ;skip arg list
-	      (if (and (not js3-bfy-consistent-level-indent-inner-bracket)
-		       (js3-bfy-looking-back (concat
-					      "\\(:\\|,\\)"
-					      js3-bfy-skip-newlines-re
-					      "\\<function\\>"
-					      js3-bfy-skip-newlines-re)))
-		  (progn
-		    (js3-bfy-re-search-backward (concat
-						 "\\(:\\|,\\)"
-						 js3-bfy-skip-newlines-re
-						 "\\<function\\>"
-						 js3-bfy-skip-newlines-re))
-		    (js3-bfy-backward-clean)
-		    (if (looking-back "[{[(,][^{[(,\n]*")
+	   ;;inside a parenthetical grouping
+	   ((nth 1 parse-status)
+	    ;; A single closing paren/bracket should be indented at the
+	    ;; same level as the opening statement.
+	    (let ((same-indent-p (looking-at
+				  "[]})]"))
+		  (continued-expr-p (js3-bfy-continued-expression-p)))
+	      (goto-char (nth 1 parse-status)) ; go to the opening char
+	      (if (looking-at "[({[]\\s-*\\(/[/*]\\|$\\)")
+		  (progn ; nothing following the opening paren/bracket
+		    (skip-syntax-backward " ")
+		    (when (eq (char-before) ?\)) (backward-list)) ;skip arg list
+		    (if (and (not js3-bfy-consistent-level-indent-inner-bracket)
+			     (js3-bfy-looking-back (concat
+						"\\(:\\|,\\)"
+						js3-bfy-skip-newlines-re
+						"\\<function\\>"
+						js3-bfy-skip-newlines-re)))
 			(progn
-			  (js3-bfy-re-search-backward "[{[(,][^{[(,\n]*")
-			  (forward-char)
-			  (js3-bfy-re-search-forward "[ \t]*"))
-		      (progn
-			(js3-bfy-re-search-backward "^")
-			(back-to-indentation)
-			(while (\= (char-after) ?f)
-			  (forward-char)))))
-		(back-to-indentation))
-              (cond (same-indent-p
-                     (current-column))
-                    (continued-expr-p
-                     (+ (current-column) (* 2 js3-bfy-indent-level)
-                        js3-bfy-expr-indent-offset))
-                    (t
-                     (+ (current-column) js3-bfy-indent-level
-                        (case (char-after (nth 1 parse-status))
-                              (?\( js3-bfy-paren-indent-offset)
-                              (?\[ js3-bfy-square-indent-offset)
-                              (?\{ js3-bfy-curly-indent-offset))))))
-          ;; If there is something following the opening
-          ;; paren/bracket, everything else should be indented at
-          ;; the same level.
-          (unless same-indent-p
-            (forward-char)
-            (skip-chars-forward " \t"))
-          (current-column))))
+			  (js3-bfy-re-search-backward (concat
+						   "\\(:\\|,\\)"
+						   js3-bfy-skip-newlines-re
+						   "\\<function\\>"
+						   js3-bfy-skip-newlines-re))
+			  (js3-bfy-backward-clean)
+			  (if (looking-back "[{[(,][^{[(,\n]*")
+			      (progn
+				(js3-bfy-re-search-backward "[{[(,][^{[(,\n]*")
+				(forward-char)
+				(js3-bfy-re-search-forward "[ \t]*"))
+			    (progn
+			      (js3-bfy-re-search-backward "^")
+			      (back-to-indentation)
+			      (while (\= (char-after) ?f)
+				(forward-char)))))
+		      (back-to-indentation))
+		    (cond (same-indent-p
+			   (current-column))
+			  (continued-expr-p
+			   (+ (current-column) (* 2 js3-bfy-indent-level)
+			      js3-bfy-expr-indent-offset))
+			  (t
+			   (+ (current-column) js3-bfy-indent-level
+			      (case (char-after (nth 1 parse-status))
+				    (?\( js3-bfy-paren-indent-offset)
+				    (?\[ js3-bfy-square-indent-offset)
+				    (?\{ js3-bfy-curly-indent-offset))))))
+		;; If there is something following the opening
+		;; paren/bracket, everything else should be indented at
+		;; the same level.
+		(unless same-indent-p
+		  (forward-char)
+		  (skip-chars-forward " \t"))
+		(current-column))))
 
-     ;;in a continued expression not handled by earlier cases
-     ((js3-bfy-continued-expression-p)
-      (+ js3-bfy-indent-level js3-bfy-expr-indent-offset))
+	   ;;in a continued expression not handled by earlier cases
+	   ((js3-bfy-continued-expression-p)
+	    (+ js3-bfy-indent-level js3-bfy-expr-indent-offset))
 
-     ;;if none of these cases, then indent to 0
-     (t 0))))
+	   ;;if none of these cases, then indent to 0
+	   (t 0)))))))
 
 (defun js3-bfy-indent-line ()
   "Indent the current line as JavaScript."
