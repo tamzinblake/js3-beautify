@@ -3047,7 +3047,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
     (js3-bfy-print-ast kid (1+ i)))
   (js3-bfy-print "} while (")
   (js3-bfy-print-ast (js3-bfy-do-node-condition n) 0)
-  (js3-bfy-print ")"))
+  (js3-bfy-print ")\n"))
 
 (defun js3-bfy-print-do-node-test (n i)
   "\n\n")
@@ -3363,7 +3363,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
         (js3-bfy-print-ast catch i)))
     (if finally
         (js3-bfy-print-ast finally i)
-      (js3-bfy-print ""))))
+      (js3-bfy-print "\n"))))
 
 (defun js3-bfy-print-try-node-test (n i)
   "\n\n")
@@ -3540,13 +3540,13 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defun js3-bfy-print-throw-node (n i)
   (js3-bfy-print "throw ")
   (js3-bfy-print-ast (js3-bfy-throw-node-expr n) 0)
-  (js3-bfy-print " "))
+  (js3-bfy-print "\n"))
 
 (defun js3-bfy-print-throw-node-test (n i)
   (concat
    (js3-bfy-print-test "throw ")
    (js3-bfy-print-ast-test (js3-bfy-throw-node-expr n) 0)
-   (js3-bfy-print-test " ")))
+   (js3-bfy-print-test "\n")))
 
 (defstruct (js3-bfy-with-node
             (:include js3-bfy-node)
@@ -3699,7 +3699,11 @@ is the target of the break - a label node or enclosing loop/switch statement.")
   (js3-bfy-print "break")
   (when (js3-bfy-break-node-label n)
     (js3-bfy-print " ")
-    (js3-bfy-print-ast (js3-bfy-break-node-label n) 0)))
+    (js3-bfy-print-ast (js3-bfy-break-node-label n) 0))
+  (if (= js3-bfy-CASE
+	 (js3-bfy-node-type (js3-bfy-node-parent n)))
+      (js3-bfy-print "; ")
+    (js3-bfy-print "\n")))
 
 (defun js3-bfy-print-break-node-test (n i)
   (concat
@@ -3707,7 +3711,11 @@ is the target of the break - a label node or enclosing loop/switch statement.")
    (when (js3-bfy-break-node-label n)
      (concat
       (js3-bfy-print-test " ")
-      (js3-bfy-print-ast-test (js3-bfy-break-node-label n) 0)))))
+      (js3-bfy-print-ast-test (js3-bfy-break-node-label n) 0)))
+   (if (= js3-bfy-CASE
+	  (js3-bfy-node-type (js3-bfy-node-parent n)))
+       (js3-bfy-print-test "; ")
+     (js3-bfy-print-test "\n"))))
 
 (defstruct (js3-bfy-continue-node
             (:include js3-bfy-jump-node)
@@ -3731,7 +3739,11 @@ a `js3-bfy-label-node' or the innermost enclosing loop.")
   (js3-bfy-print "continue")
   (when (js3-bfy-continue-node-label n)
     (js3-bfy-print " ")
-    (js3-bfy-print-ast (js3-bfy-continue-node-label n) 0)))
+    (js3-bfy-print-ast (js3-bfy-continue-node-label n) 0))
+  (if (= js3-bfy-CASE
+	 (js3-bfy-node-type (js3-bfy-node-parent n)))
+      (js3-bfy-print "; ")
+    (js3-bfy-print "\n")))
 
 (defun js3-bfy-print-continue-node-test (n i)
   (concat
@@ -3739,7 +3751,11 @@ a `js3-bfy-label-node' or the innermost enclosing loop.")
    (when (js3-bfy-continue-node-label n)
      (concat
       (js3-bfy-print-test " ")
-      (js3-bfy-print-ast-test (js3-bfy-continue-node-label n) 0)))))
+      (js3-bfy-print-ast-test (js3-bfy-continue-node-label n) 0)))
+   (if (= js3-bfy-CASE
+	  (js3-bfy-node-type (js3-bfy-node-parent n)))
+       (js3-bfy-print-test "; ")
+     (js3-bfy-print-test "\n"))))
 
 (defstruct (js3-bfy-function-node
             (:include js3-bfy-script-node)
