@@ -692,7 +692,6 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 		  1)))
       (js3-bfy-print-if-node-long n i)
     (let ((temp (js3-bfy-print-if-node-test n i)))
-      (print temp)
       (if (or (> (length temp) js3-bfy-max-columns)
 	      (string-match "\n\\(.\\|\n\\)" temp))
 	  (js3-bfy-print-if-node-long n i)
