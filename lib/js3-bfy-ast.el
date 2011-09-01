@@ -868,7 +868,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 (defun js3-bfy-print-switch-node (n i)
   (js3-bfy-print "switch (")
   (js3-bfy-print-ast (js3-bfy-switch-node-discriminant n) 0)
-  (js3-bfy-print ") {")
+  (js3-bfy-print ") {\n")
   (dolist (case (js3-bfy-switch-node-cases n))
     (js3-bfy-print-ast case i))
   (js3-bfy-print "\n}\n"))
