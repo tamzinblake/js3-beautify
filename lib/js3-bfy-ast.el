@@ -363,20 +363,20 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-visit-ast (js3-bfy-expr-stmt-node-expr n) v))
 
 (defun js3-bfy-print-expr-stmt-node (n indent)
-  (let ((expr (js3-bfy-expr-stmt-node-expr n)))
-    (let ((type (js3-bfy-node-type expr)))
-      (if (= js3-bfy-CALL type)
-	  (let ((target (js3-bfy-call-node-target expr)))
-	    (if (= js3-bfy-GETPROP (js3-bfy-node-type target))
-		(let ((left (js3-bfy-prop-get-node-left target)))
-		  (if (or (= js3-bfy-ARRAYLIT
-			     (js3-bfy-node-type left))
-			  (= js3-bfy-LP
-			     (js3-bfy-node-type left)))
-		      (js3-bfy-print ";"))))))
-      (if (or (= type js3-bfy-POS)
+  (let* ((expr (js3-bfy-expr-stmt-node-expr n))
+	 (type (js3-bfy-node-type expr))
+	 (target n))
+    (when (= js3-bfy-CALL type)
+      (setq target (js3-bfy-call-node-target expr)))
+    (when (= js3-bfy-GETPROP (js3-bfy-node-type target))
+      (setq target (js3-bfy-prop-get-node-left target)))
+    (when (or (= js3-bfy-ARRAYLIT
+		 (js3-bfy-node-type target))
+	      (= js3-bfy-LP
+		 (js3-bfy-node-type target))
+	      (= type js3-bfy-POS)
 	      (= type js3-bfy-NEG))
-	  (js3-bfy-print ";"))))
+      (js3-bfy-print ";")))
   (js3-bfy-print-ast (js3-bfy-expr-stmt-node-expr n) indent)
   (if (= js3-bfy-CASE
 	 (js3-bfy-node-type (js3-bfy-node-parent n)))
@@ -904,6 +904,8 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
     (js3-bfy-print ": "))
   (dolist (kid (js3-bfy-case-node-kids n))
     (js3-bfy-print-ast kid (1+ i)))
+  (while (looking-back ";\\s-*")
+    (js3-bfy-backspace))
   (js3-bfy-print "\n"))
 
 (defun js3-bfy-print-case-node-test (n i)
@@ -3301,6 +3303,12 @@ nor always false."
   "print the string"
   (set-buffer (get-buffer-create js3-bfy-temp-buffer))
   (insert str)
+  (set-buffer js3-bfy-current-buffer))
+
+(defun js3-bfy-backspace ()
+  "backspace once in the output buffer"
+  (set-buffer (get-buffer-create js3-bfy-temp-buffer))
+  (delete-backward-char 1)
   (set-buffer js3-bfy-current-buffer))
 
 (defun js3-bfy-print-test (str)
