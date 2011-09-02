@@ -59,6 +59,11 @@ Overrides other compact settings."
   :group 'js3-bfy
   :type 'boolean)
 
+(defcustom js3-bfy-compact-case nil
+  "If set to t, try to shorten case statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
 (defcustom js3-bfy-max-columns 70
   "Max number of columns per line."
   :group 'js3-bfy
@@ -805,6 +810,7 @@ First match-group is the leading whitespace.")
 
 (defvar js3-bfy-last-indented-line -1)
 
+(defvar js3-bfy-multiln-case nil)
 (defvar js3-bfy-looking-at-parent-for-update nil)
 (defvar js3-bfy-node-found-for-update nil)
 (defvar js3-bfy-node-for-update nil)

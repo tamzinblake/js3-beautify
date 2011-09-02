@@ -90,6 +90,11 @@ Overrides other compact settings."
   :group 'js3-bfy
   :type 'boolean)
 
+(defcustom js3-bfy-compact-case nil
+  "If set to t, try to shorten case statements onto one line."
+  :group 'js3-bfy
+  :type 'boolean)
+
 (defcustom js3-bfy-max-columns 70
   "Max number of columns per line."
   :group 'js3-bfy
@@ -836,6 +841,7 @@ First match-group is the leading whitespace.")
 
 (defvar js3-bfy-last-indented-line -1)
 
+(defvar js3-bfy-multiln-case nil)
 (defvar js3-bfy-looking-at-parent-for-update nil)
 (defvar js3-bfy-node-found-for-update nil)
 (defvar js3-bfy-node-for-update nil)
@@ -2977,8 +2983,9 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 	      (= type js3-bfy-NEG))
       (js3-bfy-print ";")))
   (js3-bfy-print-ast (js3-bfy-expr-stmt-node-expr n) indent)
-  (if (= js3-bfy-CASE
-	 (js3-bfy-node-type (js3-bfy-node-parent n)))
+  (if (and (not js3-bfy-multiln-case)
+	   (= js3-bfy-CASE
+	      (js3-bfy-node-type (js3-bfy-node-parent n))))
       (js3-bfy-print "; ")
     (js3-bfy-print "\n")
     (if (= js3-bfy-VAR
@@ -3002,8 +3009,10 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
 	       (= type js3-bfy-NEG))
 	   (js3-bfy-print-test ";"))))
    (js3-bfy-print-ast-test (js3-bfy-expr-stmt-node-expr n) indent)
-   (when (/= js3-bfy-CASE
-	     (js3-bfy-node-type (js3-bfy-node-parent n)))
+   (if (and (not js3-bfy-multiln-case)
+	    (= js3-bfy-CASE
+	       (js3-bfy-node-type (js3-bfy-node-parent n))))
+       (js3-bfy-print-test "; ")
      (js3-bfy-print-test "\n")
      (if (= js3-bfy-VAR
 	    (js3-bfy-node-type (js3-bfy-expr-stmt-node-expr n)))
@@ -3496,6 +3505,31 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
   (js3-bfy-visit-block n v))
 
 (defun js3-bfy-print-case-node (n i)
+  (if (or (not (or js3-bfy-compact js3-bfy-compact-case))
+	  js3-bfy-multiln-case)
+      (js3-bfy-print-case-node-long n i)
+    (let ((temp (js3-bfy-print-case-node-test n i)))
+      (if (or (> (length temp) js3-bfy-max-columns)
+	      (string-match "\n" temp))
+	  (progn
+	    (setq js3-bfy-multiln-case t)
+	    (js3-bfy-print-case-node-long n i)
+	    (setq js3-bfy-multiln-case nil))
+	(js3-bfy-print-case-node-compact n i)))))
+
+(defun js3-bfy-print-case-node-long (n i)
+  (if (null (js3-bfy-case-node-expr n))
+      (js3-bfy-print "default: ")
+    (js3-bfy-print "case ")
+    (js3-bfy-print-ast (js3-bfy-case-node-expr n) 0)
+    (js3-bfy-print ": "))
+  (dolist (kid (js3-bfy-case-node-kids n))
+    (js3-bfy-print-ast kid (1+ i)))
+  (while (looking-back ";\\s-*")
+    (js3-bfy-backspace))
+  (js3-bfy-print "\n"))
+
+(defun js3-bfy-print-case-node-compact (n i)
   (if (null (js3-bfy-case-node-expr n))
       (js3-bfy-print "default: ")
     (js3-bfy-print "case ")
@@ -3518,8 +3552,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
    (let ((temp ""))
      (dolist (kid (js3-bfy-case-node-kids n))
        (setq temp (concat temp (js3-bfy-print-ast-test kid (1+ i)))))
-     temp)
-   (js3-bfy-print-test "\n")))
+     temp)))
 
 (defstruct (js3-bfy-throw-node
             (:include js3-bfy-node)
@@ -3702,8 +3735,9 @@ is the target of the break - a label node or enclosing loop/switch statement.")
   (when (js3-bfy-break-node-label n)
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-break-node-label n) 0))
-  (if (= js3-bfy-CASE
-	 (js3-bfy-node-type (js3-bfy-node-parent n)))
+  (if (and (not js3-bfy-multiln-case)
+	   (= js3-bfy-CASE
+	      (js3-bfy-node-type (js3-bfy-node-parent n))))
       (js3-bfy-print "; ")
     (js3-bfy-print "\n")))
 
@@ -3714,8 +3748,9 @@ is the target of the break - a label node or enclosing loop/switch statement.")
      (concat
       (js3-bfy-print-test " ")
       (js3-bfy-print-ast-test (js3-bfy-break-node-label n) 0)))
-   (if (= js3-bfy-CASE
-	  (js3-bfy-node-type (js3-bfy-node-parent n)))
+   (if (and (not js3-bfy-multiln-case)
+	    (= js3-bfy-CASE
+	       (js3-bfy-node-type (js3-bfy-node-parent n))))
        (js3-bfy-print-test "; ")
      (js3-bfy-print-test "\n"))))
 
@@ -3742,8 +3777,9 @@ a `js3-bfy-label-node' or the innermost enclosing loop.")
   (when (js3-bfy-continue-node-label n)
     (js3-bfy-print " ")
     (js3-bfy-print-ast (js3-bfy-continue-node-label n) 0))
-  (if (= js3-bfy-CASE
-	 (js3-bfy-node-type (js3-bfy-node-parent n)))
+  (if (and (not js3-bfy-multiln-case)
+	   (= js3-bfy-CASE
+	      (js3-bfy-node-type (js3-bfy-node-parent n))))
       (js3-bfy-print "; ")
     (js3-bfy-print "\n")))
 
@@ -3754,8 +3790,9 @@ a `js3-bfy-label-node' or the innermost enclosing loop.")
      (concat
       (js3-bfy-print-test " ")
       (js3-bfy-print-ast-test (js3-bfy-continue-node-label n) 0)))
-   (if (= js3-bfy-CASE
-	  (js3-bfy-node-type (js3-bfy-node-parent n)))
+   (if (and (not js3-bfy-multiln-case)
+	    (= js3-bfy-CASE
+	       (js3-bfy-node-type (js3-bfy-node-parent n))))
        (js3-bfy-print-test "; ")
      (js3-bfy-print-test "\n"))))
 
