@@ -920,8 +920,7 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
     (js3-bfy-print ": "))
   (dolist (kid (js3-bfy-case-node-kids n))
     (js3-bfy-print-ast kid (1+ i)))
-  (while (looking-back ";\\s-*")
-    (js3-bfy-backspace))
+  (js3-bfy-delete-semicolons)
   (js3-bfy-print "\n"))
 
 (defun js3-bfy-print-case-node-compact (n i)
@@ -932,8 +931,8 @@ NAME can be a lisp symbol or string.  SYMBOL is a `js3-bfy-symbol'."
     (js3-bfy-print ": "))
   (dolist (kid (js3-bfy-case-node-kids n))
     (js3-bfy-print-ast kid (1+ i)))
-  (while (looking-back ";\\s-*")
-    (js3-bfy-backspace))
+  (print (point))
+  (js3-bfy-delete-semicolons)
   (js3-bfy-print "\n"))
 
 (defun js3-bfy-print-case-node-test (n i)
@@ -3336,10 +3335,11 @@ nor always false."
   (insert str)
   (set-buffer js3-bfy-current-buffer))
 
-(defun js3-bfy-backspace ()
-  "backspace once in the output buffer"
+(defun js3-bfy-delete-semicolons ()
+  "backspace over semicolons in the output buffer"
   (set-buffer (get-buffer-create js3-bfy-temp-buffer))
-  (delete-backward-char 1)
+  (while (looking-back "\\(;\\|\\s-\\|\n\\)+")
+    (delete-backward-char 1))
   (set-buffer js3-bfy-current-buffer))
 
 (defun js3-bfy-print-test (str)
