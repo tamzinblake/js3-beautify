@@ -2870,7 +2870,10 @@ Makes `js3-bfy-ast-parent-nodes' available to the printer functions."
     (erase-buffer)
     (set-buffer js3-bfy-current-buffer)
     (js3-bfy-print-ast ast)
-    (js3-bfy-print "\n")))
+    (js3-bfy-print "\n")
+    (js3-bfy-print "//Comments:\n")
+    (dolist (comment (js3-bfy-ast-root-comments ast))
+      (js3-bfy-print-ast comment 0))))
 
 (defun js3-bfy-print-ast (node &optional indent)
   "Helper function for printing AST nodes.
