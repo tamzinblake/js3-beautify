@@ -4,6 +4,12 @@ A Javascript pretty-printer for emacs.
 
 Initially supports only [npm style](https://github.com/isaacs/npm/blob/master/doc/coding-style.md).
 
+Not really working right at the moment.  `js3-beautify-no-indent` seems to work pretty well and quickly, but there's a significant chicken-and-egg problem with the indentation code and trying to restrict lines to less than 80 characters.
+
+Also, it's a difficult problem trying to include comments in code that has been significantly altered from its original format.  Currently the parser doesn't even include comments in-place in the AST, so would require modification to print comments using the current printing method.  I'll have to see how other tools manage this.
+
+For now, it seems likely that I will roll some of this into js3-mode and abandon this project in favor of writing a pretty-printer for another platform.
+
 ## Credits ##
 
 Created by [Thom Blake](https://github.com/thomblake).
